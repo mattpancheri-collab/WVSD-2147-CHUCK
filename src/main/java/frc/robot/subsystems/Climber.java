@@ -9,7 +9,7 @@ public class Climber extends SubsystemBase {
     private final TalonFX m_climberMotor = new TalonFX(MechanismIds.kClimberID);
 
     // =========================================================================
-    // STUDENT ADJUSTMENT AREA: CLIMB SPEED
+    // STUDENT ADJUSTMENT AREA: CLIMB SPEED Here
     // =========================================================================
     private static final double kClimbPower = 0.8;
 
