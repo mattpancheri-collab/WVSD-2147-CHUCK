@@ -27,7 +27,7 @@ public class IntakeFloor extends SubsystemBase {
   // HARDWARE / INTERNALS
   // =========================================================================
 
-  /** ✅ Intake Roller Motor (TalonFX) */
+  /** Intake Roller Motor (TalonFX) */
   private final TalonFX intakeMotor = new TalonFX(IntakeFloorConstants.kIntakeID, CANBus.kDefaultBus);
 
   private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
@@ -77,17 +77,17 @@ public class IntakeFloor extends SubsystemBase {
   // CONTROL API
   // =========================================================================
 
-  /** 🏎️ Run the intake rollers "in". */
+  /** Run the intake rollers "in". */
   public void intakeIn() {
     setRps(IntakeFloorConstants.kIntakeInRPS);
   }
 
-  /** 🏎️ Run the intake rollers "out" (eject). */
+  /** Run the intake rollers "out" (eject). */
   public void intakeOut() {
     setRps(IntakeFloorConstants.kIntakeOutRPS);
   }
 
-  /** 🏎️ Set specific rotations per second. */
+  /** Set specific rotations per second. */
   public void setRps(double rps) {
     this.targetRps = clamp(rps, -IntakeFloorConstants.kMaxRPS, IntakeFloorConstants.kMaxRPS);
   }

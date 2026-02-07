@@ -39,14 +39,14 @@ public class Launcher extends SubsystemBase {
   // HARDWARE / INTERNALS
   // =========================================================================
 
-  /** ✅ Shooter Leader (Kraken X60) - Handles Velocity PID control */
+  /** Shooter Leader (Kraken X60) - Handles Velocity PID control */
   private final TalonFX shooterLeader = new TalonFX(kShooterLeaderID, kDefaultBus);
-  /** ✅ Shooter Follower 1 (Kraken X60) */
+  /** Shooter Follower 1 (Kraken X60) */
   private final TalonFX shooterFollower1 = new TalonFX(kShooterFollower1ID, kDefaultBus);
-  /** ✅ Shooter Follower 2 (Kraken X60) */
+  /** Shooter Follower 2 (Kraken X60) */
   private final TalonFX shooterFollower2 = new TalonFX(kShooterFollower2ID, kDefaultBus);
 
-  /** ✅ Hood Motor (Kraken X44) - Handles Position PID control */
+  /** Hood Motor (Kraken X44) - Handles Position PID control */
   private final TalonFX hoodMotor = new TalonFX(kHoodID, kDefaultBus);
 
   // Control Requests
@@ -170,7 +170,7 @@ public class Launcher extends SubsystemBase {
     hoodTargetDeg = clamp(deg, kHoodMinDeg, kHoodMaxDeg);
   }
 
-  /** 👋 Stops all motors in the launcher. */
+  /** Stops all motors in the launcher. */
   public void stop() {
     setShooterRps(0.0);
     shooterLeader.stopMotor();
@@ -178,18 +178,18 @@ public class Launcher extends SubsystemBase {
     shooterFollower2.stopMotor();
   }
 
-  /** 🏎️ Sets shooter to idle speed. */
+  /** Sets shooter to idle speed. */
   public void idleShooter() {
     setShooterRps(kShooterIdleRPS);
   }
 
-  /** 📏 Sets up the launcher for a close-range shot. */
+  /** Sets up the launcher for a close-range shot. */
   public void setCloseShot() {
     setShooterRps(kShooterCloseRPS);
     setHoodDegrees(kHoodCloseDeg);
   }
 
-  /** 📏 Sets up the launcher for a far-range shot. */
+  /** Sets up the launcher for a far-range shot. */
   public void setFarShot() {
     setShooterRps(kShooterFarRPS);
     setHoodDegrees(kHoodFarDeg);

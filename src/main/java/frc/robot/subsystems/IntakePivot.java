@@ -29,7 +29,7 @@ public class IntakePivot extends SubsystemBase {
   // HARDWARE / INTERNALS
   // =========================================================================
 
-  /** ✅ Pivot Motor (Kraken X60) - Handles Position PID control */
+  /** Pivot Motor (Kraken X60) - Handles Position PID control */
   private final TalonFX pivotMotor = new TalonFX(IntakePivotConstants.kPivotID, CANBus.kDefaultBus);
 
   private final PositionVoltage positionRequest = new PositionVoltage(0).withSlot(0);
@@ -69,27 +69,27 @@ public class IntakePivot extends SubsystemBase {
   // CONTROL API
   // =========================================================================
 
-  /** 📐 Helper to set a specific angle in degrees. */
+  /** Helper to set a specific angle in degrees. */
   public void setAngleDeg(double deg) {
     targetAngleDeg = clamp(deg, IntakePivotConstants.kMinAngleDeg, IntakePivotConstants.kMaxAngleDeg);
   }
 
-  /** 👋 Stop moving. */
+  /** Stop moving. */
   public void stop() {
     pivotMotor.stopMotor();
   }
 
-  /** 📐 Move to the stowed position. */
+  /** Move to the stowed position. */
   public void stow() {
     setAngleDeg(IntakePivotConstants.kStowAngleDeg);
   }
 
-  /** 📐 Deploy the intake for floor pick-up. */
+  /** Deploy the intake for floor pick-up. */
   public void deploy() {
     setAngleDeg(IntakePivotConstants.kDeployAngleDeg);
   }
 
-  /** 📐 Set angle for Amp scoring. */
+  /** Set angle for Amp scoring. */
   public void ampPosition() {
     setAngleDeg(IntakePivotConstants.kAmpAngleDeg);
   }
