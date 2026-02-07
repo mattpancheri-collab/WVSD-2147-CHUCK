@@ -20,14 +20,15 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 /**
  * Launcher subsystem:
  * - Shooter: 3x Kraken X60 total (TalonFX)
- *   - ONE leader runs Velocity PID
- *   - Two followers follow the leader (alignment selectable)
- *   - 1:1 to two 4" flywheels
+ * - ONE leader runs Velocity PID
+ * - Two followers follow the leader (alignment selectable)
+ * - 1:1 to two 4" flywheels
  * - Hood: 1x Kraken X44 (TalonFX) with POSITION PID
- *   - Hood gear ratio: 36.57 (motor rotations / hood rotations)
+ * - Hood gear ratio: 36.57 (motor rotations / hood rotations)
  *
  * Units:
- * - Shooter setpoints are in MECHANISM rotations/sec (RPS) after SensorToMechanismRatio.
+ * - Shooter setpoints are in MECHANISM rotations/sec (RPS) after
+ * SensorToMechanismRatio.
  * - Hood setpoints are in DEGREES (converted internally to hood rotations).
  */
 public class Launcher extends SubsystemBase {
@@ -40,7 +41,7 @@ public class Launcher extends SubsystemBase {
   private static final String CAN_BUS = "rio"; // or "canivore"
 
   // Shooter CAN IDs (Kraken X60)
-  private static final int LEADER_CAN_ID = 9;    // velocity PID leader
+  private static final int LEADER_CAN_ID = 9; // velocity PID leader
   private static final int FOLLOWER1_CAN_ID = 10; // follower
   private static final int FOLLOWER2_CAN_ID = 11; // follower
 
@@ -49,8 +50,8 @@ public class Launcher extends SubsystemBase {
 
   /**
    * Followers alignment relative to the leader output.
-   * - Aligned  = follow leader direction
-   * - Opposed  = opposite direction (common for rollers facing each other)
+   * - Aligned = follow leader direction
+   * - Opposed = opposite direction (common for rollers facing each other)
    */
   private static final MotorAlignmentValue FOLLOWER1_ALIGNMENT = MotorAlignmentValue.Opposed; // TODO set
   private static final MotorAlignmentValue FOLLOWER2_ALIGNMENT = MotorAlignmentValue.Aligned; // TODO set
@@ -106,8 +107,8 @@ public class Launcher extends SubsystemBase {
   private static final double HOOD_kA = 0.0;
 
   // Hood limits (degrees)
-  private static final double HOOD_MIN_DEG = 0.0;   // TODO set
-  private static final double HOOD_MAX_DEG = 60.0;  // TODO set
+  private static final double HOOD_MIN_DEG = 0.0; // TODO set
+  private static final double HOOD_MAX_DEG = 60.0; // TODO set
 
   // Hood current limiting
   private static final boolean HOOD_ENABLE_STATOR_LIMIT = true;
@@ -128,12 +129,12 @@ public class Launcher extends SubsystemBase {
 
   private final VelocityVoltage shooterLeaderRequest = new VelocityVoltage(0).withSlot(0);
 
-  // ✅ FIX: Your Phoenix version expects MotorAlignmentValue (not boolean, not TalonFX object)
+  // ✅ FIX: Your Phoenix version expects MotorAlignmentValue (not boolean, not
+  // TalonFX object)
   private final Follower follower1Request = new Follower(LEADER_CAN_ID, FOLLOWER1_ALIGNMENT);
   private final Follower follower2Request = new Follower(LEADER_CAN_ID, FOLLOWER2_ALIGNMENT);
 
-  private final SlewRateLimiter shooterSetpointLimiter =
-      new SlewRateLimiter(SHOOTER_RAMP_RPS_PER_SEC);
+  private final SlewRateLimiter shooterSetpointLimiter = new SlewRateLimiter(SHOOTER_RAMP_RPS_PER_SEC);
 
   private double shooterTargetRps = 0.0;
 
@@ -170,8 +171,7 @@ public class Launcher extends SubsystemBase {
 
     cfg.Feedback.SensorToMechanismRatio = SHOOTER_SENSOR_TO_MECH_RATIO;
 
-    cfg.MotorOutput.NeutralMode =
-        SHOOTER_BRAKE_MODE ? NeutralModeValue.Brake : NeutralModeValue.Coast;
+    cfg.MotorOutput.NeutralMode = SHOOTER_BRAKE_MODE ? NeutralModeValue.Brake : NeutralModeValue.Coast;
     cfg.MotorOutput.Inverted = LEADER_INVERTED;
 
     Slot0Configs s0 = cfg.Slot0;
@@ -193,8 +193,7 @@ public class Launcher extends SubsystemBase {
     TalonFXConfiguration cfg = new TalonFXConfiguration();
 
     cfg.Feedback.SensorToMechanismRatio = SHOOTER_SENSOR_TO_MECH_RATIO;
-    cfg.MotorOutput.NeutralMode =
-        SHOOTER_BRAKE_MODE ? NeutralModeValue.Brake : NeutralModeValue.Coast;
+    cfg.MotorOutput.NeutralMode = SHOOTER_BRAKE_MODE ? NeutralModeValue.Brake : NeutralModeValue.Coast;
 
     CurrentLimitsConfigs cl = cfg.CurrentLimits;
     cl.StatorCurrentLimitEnable = SHOOTER_ENABLE_STATOR_LIMIT;
@@ -211,8 +210,7 @@ public class Launcher extends SubsystemBase {
 
     cfg.Feedback.SensorToMechanismRatio = HOOD_SENSOR_TO_MECH_RATIO;
 
-    cfg.MotorOutput.NeutralMode =
-        HOOD_BRAKE_MODE ? NeutralModeValue.Brake : NeutralModeValue.Coast;
+    cfg.MotorOutput.NeutralMode = HOOD_BRAKE_MODE ? NeutralModeValue.Brake : NeutralModeValue.Coast;
     cfg.MotorOutput.Inverted = HOOD_INVERTED;
 
     Slot0Configs s0 = cfg.Slot0;
@@ -340,6 +338,70 @@ public class Launcher extends SubsystemBase {
 
   public Command runShooterRpsCommand(double rps) {
     return run(() -> setShooterRps(rps)).finallyDo(i -> setShooterRps(0.0));
+  }
+
+  // =========================================================================
+  // INDIVIDUAL MOTOR TESTING (for hardware validation)
+  // =========================================================================
+
+  /**
+   * Test shooter LEADER motor only at a specific RPS.
+   * Followers will NOT move in this mode.
+   * Use for hardware/wiring validation.
+   */
+  public Command testShooterLeaderCommand(double rps) {
+    return run(() -> {
+      shooterLeader.setControl(shooterLeaderRequest.withVelocity(rps));
+      shooterFollower1.stopMotor();
+      shooterFollower2.stopMotor();
+    }).finallyDo(interrupted -> {
+      shooterLeader.stopMotor();
+    });
+  }
+
+  /**
+   * Test shooter FOLLOWER 1 motor only at a specific RPS.
+   * Leader and Follower 2 will NOT move.
+   * Use for hardware/wiring validation.
+   */
+  public Command testShooterFollower1Command(double rps) {
+    return run(() -> {
+      shooterLeader.stopMotor();
+      shooterFollower1.setControl(new VelocityVoltage(rps).withSlot(0));
+      shooterFollower2.stopMotor();
+    }).finallyDo(interrupted -> {
+      shooterFollower1.stopMotor();
+    });
+  }
+
+  /**
+   * Test shooter FOLLOWER 2 motor only at a specific RPS.
+   * Leader and Follower 1 will NOT move.
+   * Use for hardware/wiring validation.
+   */
+  public Command testShooterFollower2Command(double rps) {
+    return run(() -> {
+      shooterLeader.stopMotor();
+      shooterFollower1.stopMotor();
+      shooterFollower2.setControl(new VelocityVoltage(rps).withSlot(0));
+    }).finallyDo(interrupted -> {
+      shooterFollower2.stopMotor();
+    });
+  }
+
+  /**
+   * Test hood motor at a specific target angle in degrees.
+   * Shooter motors will NOT move.
+   * Use for hardware/wiring validation.
+   */
+  public Command testHoodCommand(double targetDeg) {
+    return run(() -> {
+      shooterLeader.stopMotor();
+      shooterFollower1.stopMotor();
+      shooterFollower2.stopMotor();
+      double hoodRot = clamp(targetDeg, HOOD_MIN_DEG, HOOD_MAX_DEG) / 360.0;
+      hoodMotor.setControl(hoodPositionRequest.withPosition(hoodRot));
+    });
   }
 
   // =========================================================================

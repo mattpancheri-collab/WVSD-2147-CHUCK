@@ -25,8 +25,7 @@ public class LaunchFeeder extends SubsystemBase {
   private static final int CANRANGE_CAN_ID = 30;
   private static final String CAN_BUS = "rio";
 
-  private static final InvertedValue INVERTED =
-      InvertedValue.CounterClockwise_Positive;
+  private static final InvertedValue INVERTED = InvertedValue.CounterClockwise_Positive;
   private static final boolean BRAKE_MODE = false;
 
   private static final double SENSOR_TO_MECH_RATIO = 1.0;
@@ -62,8 +61,7 @@ public class LaunchFeeder extends SubsystemBase {
   private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
   private final SlewRateLimiter rpsLimiter = new SlewRateLimiter(RAMP_RPS_PER_SEC);
 
-  private final Debouncer ballDebouncer =
-      new Debouncer(BALL_DETECT_DEBOUNCE_SEC, Debouncer.DebounceType.kRising);
+  private final Debouncer ballDebouncer = new Debouncer(BALL_DETECT_DEBOUNCE_SEC, Debouncer.DebounceType.kRising);
 
   private double targetRps = 0.0;
 
@@ -77,8 +75,7 @@ public class LaunchFeeder extends SubsystemBase {
 
     config.Feedback.SensorToMechanismRatio = SENSOR_TO_MECH_RATIO;
 
-    config.MotorOutput.NeutralMode =
-        BRAKE_MODE ? NeutralModeValue.Brake : NeutralModeValue.Coast;
+    config.MotorOutput.NeutralMode = BRAKE_MODE ? NeutralModeValue.Brake : NeutralModeValue.Coast;
     config.MotorOutput.Inverted = INVERTED;
 
     Slot0Configs slot0 = config.Slot0;
@@ -196,6 +193,14 @@ public class LaunchFeeder extends SubsystemBase {
 
   /** ✅ NEW: matches your RobotContainer "40% constant" style */
   public Command feederCommand(double rps) {
+    return run(() -> setRps(rps)).finallyDo(interrupted -> stop());
+  }
+
+  /**
+   * Test feeder motor at specific RPS for hardware validation.
+   * Use this to verify motor wiring and direction.
+   */
+  public Command testMotorCommand(double rps) {
     return run(() -> setRps(rps)).finallyDo(interrupted -> stop());
   }
 

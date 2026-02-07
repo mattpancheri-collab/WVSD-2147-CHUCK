@@ -104,7 +104,7 @@ public class RobotContainer {
                 // OPERATOR CONTROLS (your existing mappings)
                 // ========================================================================= //
                 // Launcher & Feeder
-                operatorJoystick.rightBumper().whileTrue(launcher.runLauncherCommand());
+                operatorJoystick.rightBumper().whileTrue(launcher.closeShotCommand());
                 operatorJoystick.leftBumper().whileTrue(launchFeeder.feederInCommand());
 
                 // Intake

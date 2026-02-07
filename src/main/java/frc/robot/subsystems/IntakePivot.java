@@ -101,7 +101,8 @@ public class IntakePivot extends SubsystemBase {
   private final StatusSignal<Current> statorCurrentSignal = motor.getStatorCurrent();
   private final StatusSignal<Temperature> temperatureSignal = motor.getDeviceTemp();
 
-  // Simulation model (Falcon sim is “close enough” if you don’t have Kraken helper in your WPILib)
+  // Simulation model (Falcon sim is “close enough” if you don’t have Kraken
+  // helper in your WPILib)
   private final DCMotor dcMotor = DCMotor.getFalcon500(1);
   private final SingleJointedArmSim armSim;
 
@@ -113,16 +114,15 @@ public class IntakePivot extends SubsystemBase {
     // Zero mechanism position at boot (only correct if you are physically at zero)
     motor.setPosition(0.0);
 
-    armSim =
-        new SingleJointedArmSim(
-            dcMotor,
-            SENSOR_TO_MECH_RATIO,
-            SingleJointedArmSim.estimateMOI(ARM_LENGTH_M, 2.26796),
-            ARM_LENGTH_M,
-            0.0,
-            Math.PI / 2.0,
-            true,
-            0.0);
+    armSim = new SingleJointedArmSim(
+        dcMotor,
+        SENSOR_TO_MECH_RATIO,
+        SingleJointedArmSim.estimateMOI(ARM_LENGTH_M, 2.26796),
+        ARM_LENGTH_M,
+        0.0,
+        Math.PI / 2.0,
+        true,
+        0.0);
   }
 
   private void applyConfig() {
@@ -178,11 +178,9 @@ public class IntakePivot extends SubsystemBase {
         BatterySim.calculateDefaultBatteryLoadedVoltage(armSim.getCurrentDrawAmps()));
 
     // Convert sim mechanism rad -> rotor rotations for CTRE sim
-    double rotorPosRot =
-        Radians.of(armSim.getAngleRads() * SENSOR_TO_MECH_RATIO).in(Rotations);
-    double rotorVelRps =
-        RadiansPerSecond.of(armSim.getVelocityRadPerSec() * SENSOR_TO_MECH_RATIO)
-            .in(RotationsPerSecond);
+    double rotorPosRot = Radians.of(armSim.getAngleRads() * SENSOR_TO_MECH_RATIO).in(Rotations);
+    double rotorVelRps = RadiansPerSecond.of(armSim.getVelocityRadPerSec() * SENSOR_TO_MECH_RATIO)
+        .in(RotationsPerSecond);
 
     motor.getSimState().setRawRotorPosition(rotorPosRot);
     motor.getSimState().setRotorVelocity(rotorVelRps);
@@ -274,7 +272,8 @@ public class IntakePivot extends SubsystemBase {
   }
 
   /**
-   * Velocity PID: set pivot velocity in degrees/sec with optional accel (deg/s^2) for FF.
+   * Velocity PID: set pivot velocity in degrees/sec with optional accel (deg/s^2)
+   * for FF.
    */
   public void setVelocityDegPerSec(double velocityDegPerSec, double accelDegPerSec2) {
     double velRadPerSec = Units.degreesToRadians(velocityDegPerSec);
@@ -317,7 +316,10 @@ public class IntakePivot extends SubsystemBase {
     return runOnce(() -> setVelocityDegPerSec(0.0));
   }
 
-  /** Command: run at a given pivot velocity in RPS (used by your RobotContainer POV testing). */
+  /**
+   * Command: run at a given pivot velocity in RPS (used by your RobotContainer
+   * POV testing).
+   */
   public Command pivotRpsCommand(double rps) {
     return run(() -> setVelocityRps(rps)).finallyDo(interrupted -> setVelocityRps(0.0));
   }
@@ -328,18 +330,20 @@ public class IntakePivot extends SubsystemBase {
         .finallyDo(interrupted -> setVelocityDegPerSec(0.0));
   }
 
-  /** Command: simple “drive to angle” using a crude proportional velocity (uses MAX_VELOCITY_RAD_PER_SEC cap). */
+  /**
+   * Command: simple “drive to angle” using a crude proportional velocity (uses
+   * MAX_VELOCITY_RAD_PER_SEC cap).
+   */
   public Command moveToAngleCommand(double targetDeg) {
     return run(() -> {
-          double currentDeg = getPositionDegrees();
-          double errorDeg = targetDeg - currentDeg;
+      double currentDeg = getPositionDegrees();
+      double errorDeg = targetDeg - currentDeg;
 
-          double maxVelDegPerSec = Units.radiansToDegrees(MAX_VELOCITY_RAD_PER_SEC);
-          double cmdVelDegPerSec =
-              Math.signum(errorDeg) * Math.min(Math.abs(errorDeg) * 2.0, maxVelDegPerSec);
+      double maxVelDegPerSec = Units.radiansToDegrees(MAX_VELOCITY_RAD_PER_SEC);
+      double cmdVelDegPerSec = Math.signum(errorDeg) * Math.min(Math.abs(errorDeg) * 2.0, maxVelDegPerSec);
 
-          setVelocityDegPerSec(cmdVelDegPerSec);
-        })
+      setVelocityDegPerSec(cmdVelDegPerSec);
+    })
         .until(() -> Math.abs(targetDeg - getPositionDegrees()) < 2.0)
         .finallyDo(interrupted -> setVelocityDegPerSec(0.0));
   }
@@ -351,6 +355,14 @@ public class IntakePivot extends SubsystemBase {
 
   public Command pivotToAmp() {
     return setAngleCommand(AMP_DEG);
+  }
+
+  /**
+   * Test pivot motor at specific velocity (RPS) for hardware validation.
+   * Use this to verify motor wiring, direction, and encoder.
+   */
+  public Command testMotorCommand(double rps) {
+    return run(() -> setVelocityRps(rps)).finallyDo(interrupted -> setVelocityRps(0.0));
   }
 
   // =========================================================================

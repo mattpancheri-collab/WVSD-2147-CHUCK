@@ -22,12 +22,11 @@ public class IntakeFloor extends SubsystemBase {
   // =========================================================================
 
   // CAN
-  private static final int CAN_ID = 16;         
-  private static final String CAN_BUS = "rio";   // or "canivore"
+  private static final int CAN_ID = 16;
+  private static final String CAN_BUS = "rio"; // or "canivore"
 
   // Motor behavior
-  private static final InvertedValue INVERTED =
-      InvertedValue.CounterClockwise_Positive;  // flip if backwards
+  private static final InvertedValue INVERTED = InvertedValue.CounterClockwise_Positive; // flip if backwards
   private static final boolean BRAKE_MODE = false;
 
   // Gear ratio (direct drive)
@@ -41,16 +40,17 @@ public class IntakeFloor extends SubsystemBase {
    * 1) Start with kI = 0 and kD = 0.
    * 2) Set kP very small (ex: 0.02 to 0.05).
    * 3) Command a constant speed (ex: intakeIn()) and watch velocity error:
-   *    - If it reaches speed slowly / feels "lazy": increase kP.
-   *    - If it overshoots and oscillates (speed bounces up/down): decrease kP.
+   * - If it reaches speed slowly / feels "lazy": increase kP.
+   * - If it overshoots and oscillates (speed bounces up/down): decrease kP.
    * 4) Your goal: fast rise to target with little/no oscillation.
    * 5) Only after kP feels good:
-   *    - Add a tiny kD (ex: 0.001–0.01) if it jitters/oscillates at steady speed.
-   *    - Add kI only if it NEVER quite reaches target under load (usually not needed for intakes).
+   * - Add a tiny kD (ex: 0.001–0.01) if it jitters/oscillates at steady speed.
+   * - Add kI only if it NEVER quite reaches target under load (usually not needed
+   * for intakes).
    *
    * Tip: Use SmartDashboard/Shuffleboard logs of TargetRPS vs VelocityRPS.
    */
-  private static final double kP = 0.15;   // TODO tune using guide above
+  private static final double kP = 0.15; // TODO tune using guide above
   private static final double kI = 0.0;
   private static final double kD = 0.0;
 
@@ -65,27 +65,25 @@ public class IntakeFloor extends SubsystemBase {
   private static final double STATOR_LIMIT_AMPS = 60.0;
 
   // Motion limits
-  private static final double MAX_RPS = 90.0;          // Kraken ≈ 100 rps free
-  private static final double RAMP_RPS_PER_SEC = 300;  // smooth accel
+  private static final double MAX_RPS = 90.0; // Kraken ≈ 100 rps free
+  private static final double RAMP_RPS_PER_SEC = 300; // smooth accel
 
   // -------------------------
   // Intake helper speeds
   // -------------------------
   /** Positive speed = "intake in" (change sign if your mechanism is reversed). */
-  private static final double IN_RPS = 45.0;     // TODO set for your intake
+  private static final double IN_RPS = 45.0; // TODO set for your intake
   /** Negative speed = "spit out". */
-  private static final double OUT_RPS = -35.0;   // TODO set for your intake
+  private static final double OUT_RPS = -35.0; // TODO set for your intake
 
   // =========================================================================
   // HARDWARE / INTERNALS (do not touch)
   // =========================================================================
 
   private final TalonFX motor = new TalonFX(CAN_ID, CAN_BUS);
-  private final VelocityVoltage velocityRequest =
-      new VelocityVoltage(0).withSlot(0);
+  private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
 
-  private final SlewRateLimiter rpsLimiter =
-      new SlewRateLimiter(RAMP_RPS_PER_SEC);
+  private final SlewRateLimiter rpsLimiter = new SlewRateLimiter(RAMP_RPS_PER_SEC);
 
   private double targetRps = 0.0;
 
@@ -105,8 +103,7 @@ public class IntakeFloor extends SubsystemBase {
     config.Feedback.SensorToMechanismRatio = SENSOR_TO_MECH_RATIO;
 
     // Output settings
-    config.MotorOutput.NeutralMode =
-        BRAKE_MODE ? NeutralModeValue.Brake : NeutralModeValue.Coast;
+    config.MotorOutput.NeutralMode = BRAKE_MODE ? NeutralModeValue.Brake : NeutralModeValue.Coast;
     config.MotorOutput.Inverted = INVERTED;
 
     // Slot 0 PID + FF
@@ -193,9 +190,7 @@ public class IntakeFloor extends SubsystemBase {
   public void simulationPeriodic() {
     RoboRioSim.setVInVoltage(
         BatterySim.calculateDefaultBatteryLoadedVoltage(
-            motor.getStatorCurrent().getValueAsDouble()
-        )
-    );
+            motor.getStatorCurrent().getValueAsDouble()));
   }
 
   // =========================================================================
@@ -214,6 +209,14 @@ public class IntakeFloor extends SubsystemBase {
 
   /** Command: run at a specific RPS (runs until interrupted). */
   public Command intakeCommand(double rps) {
+    return run(() -> setRps(rps)).finallyDo(interrupted -> stop());
+  }
+
+  /**
+   * Test intake motor at specific RPS for hardware validation.
+   * Use this to verify motor wiring and direction.
+   */
+  public Command testMotorCommand(double rps) {
     return run(() -> setRps(rps)).finallyDo(interrupted -> stop());
   }
 

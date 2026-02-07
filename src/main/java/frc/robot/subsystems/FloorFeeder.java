@@ -22,12 +22,11 @@ public class FloorFeeder extends SubsystemBase {
   // =========================================================================
 
   // CAN
-  private static final int CAN_ID = 14;          // TODO set
-  private static final String CAN_BUS = "rio";   // or "canivore"
+  private static final int CAN_ID = 14; // TODO set
+  private static final String CAN_BUS = "rio"; // or "canivore"
 
   // Motor behavior (Phoenix 6 uses enum, not boolean)
-  private static final InvertedValue INVERTED =
-      InvertedValue.CounterClockwise_Positive;  // flip if backwards
+  private static final InvertedValue INVERTED = InvertedValue.CounterClockwise_Positive; // flip if backwards
   private static final boolean BRAKE_MODE = false;
 
   // Gear ratio
@@ -42,14 +41,16 @@ public class FloorFeeder extends SubsystemBase {
    * kP tuning guide (Velocity PID):
    * 1) Start with kI = 0 and kD = 0.
    * 2) Start kP small (ex: 0.02–0.08).
-   * 3) Command a constant speed (ex: feederIn()) and watch VelocityRPS vs TargetRPS:
-   *    - Too slow to reach target / big steady error => increase kP.
-   *    - Overshoot/oscillation (speed bounces) => decrease kP.
+   * 3) Command a constant speed (ex: feederIn()) and watch VelocityRPS vs
+   * TargetRPS:
+   * - Too slow to reach target / big steady error => increase kP.
+   * - Overshoot/oscillation (speed bounces) => decrease kP.
    * 4) Goal: quick rise, minimal overshoot, stable steady speed.
    * 5) If it “buzzes” around target, add tiny kD (ex: 0.001–0.01).
-   * 6) kI is rarely needed on feeders; only add if it *never* reaches target under load.
+   * 6) kI is rarely needed on feeders; only add if it *never* reaches target
+   * under load.
    */
-  private static final double kP = 0.18;   // TODO tune
+  private static final double kP = 0.18; // TODO tune
   private static final double kI = 0.0;
   private static final double kD = 0.0;
 
@@ -63,12 +64,15 @@ public class FloorFeeder extends SubsystemBase {
   private static final double STATOR_LIMIT_AMPS = 60.0;
 
   // Motion limits
-  private static final double MAX_RPS = 90.0;          // Kraken ≈ 100 rps free
-  private static final double RAMP_RPS_PER_SEC = 350;  // smooth accel
+  private static final double MAX_RPS = 90.0; // Kraken ≈ 100 rps free
+  private static final double RAMP_RPS_PER_SEC = 350; // smooth accel
 
   // Preset helper speeds
-  /** Positive = feed toward shooter/indexer (flip sign if your mechanism is reversed). */
-  private static final double FEED_IN_RPS = 40.0;   // TODO set
+  /**
+   * Positive = feed toward shooter/indexer (flip sign if your mechanism is
+   * reversed).
+   */
+  private static final double FEED_IN_RPS = 40.0; // TODO set
   /** Negative = reverse / clear jam. */
   private static final double FEED_OUT_RPS = -30.0; // TODO set
 
@@ -99,8 +103,7 @@ public class FloorFeeder extends SubsystemBase {
     config.Feedback.SensorToMechanismRatio = SENSOR_TO_MECH_RATIO;
 
     // Output
-    config.MotorOutput.NeutralMode =
-        BRAKE_MODE ? NeutralModeValue.Brake : NeutralModeValue.Coast;
+    config.MotorOutput.NeutralMode = BRAKE_MODE ? NeutralModeValue.Brake : NeutralModeValue.Coast;
     config.MotorOutput.Inverted = INVERTED;
 
     // Slot 0 PID + FF
@@ -181,7 +184,8 @@ public class FloorFeeder extends SubsystemBase {
     // Slew limit setpoint so we don't brown out / shock load belts.
     double limitedRps = rpsLimiter.calculate(targetRps);
 
-    // Velocity PID setpoint is in mechanism rotations/sec (after SensorToMechanismRatio).
+    // Velocity PID setpoint is in mechanism rotations/sec (after
+    // SensorToMechanismRatio).
     motor.setControl(velocityRequest.withVelocity(limitedRps));
   }
 
@@ -190,9 +194,7 @@ public class FloorFeeder extends SubsystemBase {
     // Lightweight battery sag effect (not a full mechanism sim).
     RoboRioSim.setVInVoltage(
         BatterySim.calculateDefaultBatteryLoadedVoltage(
-            motor.getStatorCurrent().getValueAsDouble()
-        )
-    );
+            motor.getStatorCurrent().getValueAsDouble()));
   }
 
   // =========================================================================
@@ -211,6 +213,14 @@ public class FloorFeeder extends SubsystemBase {
 
   /** Command: run at a specific RPS (runs until interrupted). */
   public Command feederCommand(double rps) {
+    return run(() -> setRps(rps)).finallyDo(interrupted -> stop());
+  }
+
+  /**
+   * Test feeder motor at specific RPS for hardware validation.
+   * Use this to verify motor wiring and direction.
+   */
+  public Command testMotorCommand(double rps) {
     return run(() -> setRps(rps)).finallyDo(interrupted -> stop());
   }
 

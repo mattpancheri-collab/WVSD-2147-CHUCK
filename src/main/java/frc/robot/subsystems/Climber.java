@@ -32,4 +32,15 @@ public class Climber extends SubsystemBase {
                 () -> m_climberMotor.set(-kClimbPower),
                 () -> m_climberMotor.stopMotor());
     }
+
+    /**
+     * Test climber motor at specific percent output (-1.0 to 1.0) for hardware
+     * validation.
+     * Use this to verify motor wiring, direction, and brake mode.
+     */
+    public Command testMotorCommand(double percentOutput) {
+        return this.runEnd(
+                () -> m_climberMotor.set(percentOutput),
+                () -> m_climberMotor.stopMotor());
+    }
 }
