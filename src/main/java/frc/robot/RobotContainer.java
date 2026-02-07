@@ -111,8 +111,8 @@ public class RobotContainer {
                 operatorJoystick.x().whileTrue(intakeFloor.intakeInCommand());
                 operatorJoystick.b().whileTrue(intakeFloor.intakeOutCommand());
 
-                operatorJoystick.y().onTrue(intakePivot.pivotToAmp());
-                operatorJoystick.a().onTrue(intakePivot.pivotStow());
+                operatorJoystick.y().onTrue(intakePivot.pivotToAmpCommand());
+                operatorJoystick.a().onTrue(intakePivot.pivotStowCommand());
 
                 // =========================================================================
                 // TESTING JOYSTICK BINDINGS (all at 40%)
