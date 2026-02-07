@@ -15,75 +15,19 @@ import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import static frc.robot.Constants.FloorFeederConstants.*;
+import static frc.robot.Constants.CANBus.kDefaultBus;
+
 public class FloorFeeder extends SubsystemBase {
-
-  // =========================================================================
-  // STUDENT ADJUSTMENT AREA: Floor Feeder Settings
-  // =========================================================================
-
-  // CAN
-  private static final int CAN_ID = 14; // TODO set
-  private static final String CAN_BUS = "rio"; // or "canivore"
-
-  // Motor behavior (Phoenix 6 uses enum, not boolean)
-  private static final InvertedValue INVERTED = InvertedValue.CounterClockwise_Positive; // flip if backwards
-  private static final boolean BRAKE_MODE = false;
-
-  // Gear ratio
-  // Set to (motor rotations) / (mechanism rotations).
-  // 1:1 direct drive => 1.0
-  private static final double SENSOR_TO_MECH_RATIO = 1.0; // TODO set if geared
-
-  // -------------------------
-  // Velocity PID (Slot 0)
-  // -------------------------
-  /**
-   * kP tuning guide (Velocity PID):
-   * 1) Start with kI = 0 and kD = 0.
-   * 2) Start kP small (ex: 0.02–0.08).
-   * 3) Command a constant speed (ex: feederIn()) and watch VelocityRPS vs
-   * TargetRPS:
-   * - Too slow to reach target / big steady error => increase kP.
-   * - Overshoot/oscillation (speed bounces) => decrease kP.
-   * 4) Goal: quick rise, minimal overshoot, stable steady speed.
-   * 5) If it “buzzes” around target, add tiny kD (ex: 0.001–0.01).
-   * 6) kI is rarely needed on feeders; only add if it *never* reaches target
-   * under load.
-   */
-  private static final double kP = 0.18; // TODO tune
-  private static final double kI = 0.0;
-  private static final double kD = 0.0;
-
-  // Feedforward (volts) - optional
-  private static final double kS = 0.0;
-  private static final double kV = 0.12;
-  private static final double kA = 0.0;
-
-  // Current limiting
-  private static final boolean ENABLE_STATOR_LIMIT = true;
-  private static final double STATOR_LIMIT_AMPS = 60.0;
-
-  // Motion limits
-  private static final double MAX_RPS = 90.0; // Kraken ≈ 100 rps free
-  private static final double RAMP_RPS_PER_SEC = 350; // smooth accel
-
-  // Preset helper speeds
-  /**
-   * Positive = feed toward shooter/indexer (flip sign if your mechanism is
-   * reversed).
-   */
-  private static final double FEED_IN_RPS = 40.0; // TODO set
-  /** Negative = reverse / clear jam. */
-  private static final double FEED_OUT_RPS = -30.0; // TODO set
 
   // =========================================================================
   // HARDWARE / INTERNALS (do not touch)
   // =========================================================================
 
-  private final TalonFX motor = new TalonFX(CAN_ID, CAN_BUS);
+  private final TalonFX motor = new TalonFX(kFeederID, kDefaultBus);
   private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
 
-  private final SlewRateLimiter rpsLimiter = new SlewRateLimiter(RAMP_RPS_PER_SEC);
+  private final SlewRateLimiter rpsLimiter = new SlewRateLimiter(kRampRPSPerSec);
 
   private double targetRps = 0.0;
 
@@ -99,26 +43,22 @@ public class FloorFeeder extends SubsystemBase {
   private void configureMotor() {
     TalonFXConfiguration config = new TalonFXConfiguration();
 
-    // Feedback scaling
-    config.Feedback.SensorToMechanismRatio = SENSOR_TO_MECH_RATIO;
+    config.Feedback.SensorToMechanismRatio = 1.0;
 
-    // Output
-    config.MotorOutput.NeutralMode = BRAKE_MODE ? NeutralModeValue.Brake : NeutralModeValue.Coast;
-    config.MotorOutput.Inverted = INVERTED;
+    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
-    // Slot 0 PID + FF
     Slot0Configs slot0 = config.Slot0;
     slot0.kP = kP;
     slot0.kI = kI;
     slot0.kD = kD;
-    slot0.kS = kS;
-    slot0.kV = kV;
-    slot0.kA = kA;
+    slot0.kS = 0.0;
+    slot0.kV = 0.12;
+    slot0.kA = 0.0;
 
-    // Current limits
     CurrentLimitsConfigs currentLimits = config.CurrentLimits;
-    currentLimits.StatorCurrentLimitEnable = ENABLE_STATOR_LIMIT;
-    currentLimits.StatorCurrentLimit = STATOR_LIMIT_AMPS;
+    currentLimits.StatorCurrentLimitEnable = kEnableStatorLimit;
+    currentLimits.StatorCurrentLimit = kStatorLimitAmps;
 
     motor.getConfigurator().apply(config);
   }
@@ -129,12 +69,12 @@ public class FloorFeeder extends SubsystemBase {
 
   /** Feed game piece forward at preset speed. */
   public void feederIn() {
-    setRps(FEED_IN_RPS);
+    setRps(kFeedInRPS);
   }
 
   /** Reverse feeder (spit out / clear jam) at preset speed. */
   public void feederOut() {
-    setRps(FEED_OUT_RPS);
+    setRps(kFeedOutRPS);
   }
 
   // =========================================================================
@@ -143,7 +83,7 @@ public class FloorFeeder extends SubsystemBase {
 
   /** Set feeder speed in MECHANISM rotations per second. */
   public void setRps(double rps) {
-    targetRps = clamp(rps, -MAX_RPS, MAX_RPS);
+    this.targetRps = clamp(rps, -kMaxRPS, kMaxRPS);
   }
 
   public void stop() {

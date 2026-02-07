@@ -25,8 +25,8 @@ import frc.robot.subsystems.IntakeFloor;
 import frc.robot.subsystems.Climber;
 
 public class RobotContainer {
-        private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
-        private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
+        private final double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+        private final double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
 
         /* Swerve requests */
         private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()

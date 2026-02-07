@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.FloorFeeder;
 import frc.robot.subsystems.LaunchFeeder;
 import frc.robot.subsystems.Launcher;
@@ -16,7 +17,8 @@ import frc.robot.subsystems.Launcher;
  * - Only build and return Commands
  */
 public final class LauncherFactory {
-  private LauncherFactory() {}
+  private LauncherFactory() {
+  }
 
   /**
    * While held:
@@ -29,12 +31,12 @@ public final class LauncherFactory {
    * - Stop launch feeder
    * - Stop launcher
    *
-   * @param launcher shooter flywheels subsystem
-   * @param floorFeeder intake/floor feeder subsystem
-   * @param launchFeeder launcher feeder subsystem
-   * @param percent 0..1 (use 0.90 for 90%)
-   * @param launcherMaxRps safe cap for shooter (RPS)
-   * @param floorFeederMaxRps safe cap for floor feeder (RPS)
+   * @param launcher           shooter flywheels subsystem
+   * @param floorFeeder        intake/floor feeder subsystem
+   * @param launchFeeder       launcher feeder subsystem
+   * @param percent            0..1 (use 0.90 for 90%)
+   * @param launcherMaxRps     safe cap for shooter (RPS)
+   * @param floorFeederMaxRps  safe cap for floor feeder (RPS)
    * @param launchFeederMaxRps safe cap for launch feeder (RPS)
    */
   public static Command shootFeedPercent(
@@ -53,14 +55,14 @@ public final class LauncherFactory {
     final double launchFeederRps = p * launchFeederMaxRps;
 
     return Commands.parallel(
-            launcher.runShooterRpsCommand(launcherRps),
-            floorFeeder.feederCommand(floorFeederRps),
-            launchFeeder.feederCommand(launchFeederRps))
+        launcher.runShooterRpsCommand(launcherRps),
+        floorFeeder.feederCommand(floorFeederRps),
+        launchFeeder.feederCommand(launchFeederRps))
         .finallyDo(
             interrupted -> {
-              floorFeeder.stopCommand().schedule();
-              launchFeeder.stopCommand().schedule();
-              launcher.runShooterRpsCommand(0.0).schedule();
+              CommandScheduler.getInstance().schedule(floorFeeder.stopCommand());
+              CommandScheduler.getInstance().schedule(launchFeeder.stopCommand());
+              CommandScheduler.getInstance().schedule(launcher.runShooterRpsCommand(0.0));
             });
   }
 

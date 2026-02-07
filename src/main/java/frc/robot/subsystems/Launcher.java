@@ -17,6 +17,9 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import static frc.robot.Constants.LauncherConstants.*;
+import static frc.robot.Constants.CANBus.kDefaultBus;
+
 /**
  * Launcher subsystem:
  * - Shooter: 3x Kraken X60 total (TalonFX)
@@ -27,122 +30,42 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * - Hood gear ratio: 36.57 (motor rotations / hood rotations)
  *
  * Units:
- * - Shooter setpoints are in MECHANISM rotations/sec (RPS) after
- * SensorToMechanismRatio.
+ * - Shooter setpoints are in MECHANISM rotations/sec (RPS).
  * - Hood setpoints are in DEGREES (converted internally to hood rotations).
  */
 public class Launcher extends SubsystemBase {
 
   // =========================================================================
-  // STUDENT ADJUSTMENT AREA: Launcher Settings
+  // HARDWARE / INTERNALS
   // =========================================================================
 
-  // CAN bus
-  private static final String CAN_BUS = "rio"; // or "canivore"
+  /** ✅ Shooter Leader (Kraken X60) - Handles Velocity PID control */
+  private final TalonFX shooterLeader = new TalonFX(kShooterLeaderID, kDefaultBus);
+  /** ✅ Shooter Follower 1 (Kraken X60) */
+  private final TalonFX shooterFollower1 = new TalonFX(kShooterFollower1ID, kDefaultBus);
+  /** ✅ Shooter Follower 2 (Kraken X60) */
+  private final TalonFX shooterFollower2 = new TalonFX(kShooterFollower2ID, kDefaultBus);
 
-  // Shooter CAN IDs (Kraken X60)
-  private static final int LEADER_CAN_ID = 9; // velocity PID leader
-  private static final int FOLLOWER1_CAN_ID = 10; // follower
-  private static final int FOLLOWER2_CAN_ID = 11; // follower
+  /** ✅ Hood Motor (Kraken X44) - Handles Position PID control */
+  private final TalonFX hoodMotor = new TalonFX(kHoodID, kDefaultBus);
 
-  // Shooter inversion (defines "positive" for the whole launcher)
-  private static final InvertedValue LEADER_INVERTED = InvertedValue.CounterClockwise_Positive;
+  // Control Requests
+  private final VelocityVoltage shooterLeaderRequest = new VelocityVoltage(0).withSlot(0);
+  private final PositionVoltage hoodPositionRequest = new PositionVoltage(0).withSlot(0);
 
   /**
    * Followers alignment relative to the leader output.
    * - Aligned = follow leader direction
    * - Opposed = opposite direction (common for rollers facing each other)
    */
-  private static final MotorAlignmentValue FOLLOWER1_ALIGNMENT = MotorAlignmentValue.Opposed; // TODO set
-  private static final MotorAlignmentValue FOLLOWER2_ALIGNMENT = MotorAlignmentValue.Aligned; // TODO set
+  private final Follower follower1Request = new Follower(kShooterLeaderID, MotorAlignmentValue.Opposed);
+  private final Follower follower2Request = new Follower(kShooterLeaderID, MotorAlignmentValue.Aligned);
 
-  private static final boolean SHOOTER_BRAKE_MODE = false; // shooter usually coasts
-
-  // Shooter gear ratio (motor rotations / wheel rotations). 1:1 => 1.0
-  private static final double SHOOTER_SENSOR_TO_MECH_RATIO = 1.0;
-
-  // Shooter Velocity PID (Slot 0) on LEADER only
-  private static final double SHOOTER_kP = 0.10; // TODO tune
-  private static final double SHOOTER_kI = 0.0;
-  private static final double SHOOTER_kD = 0.0;
-
-  // Optional shooter FF (volts) - can stay 0 initially
-  private static final double SHOOTER_kS = 0.0;
-  private static final double SHOOTER_kV = 0.0;
-  private static final double SHOOTER_kA = 0.0;
-
-  // Shooter current limiting
-  private static final boolean SHOOTER_ENABLE_STATOR_LIMIT = true;
-  private static final double SHOOTER_STATOR_LIMIT_AMPS = 80.0;
-
-  // Shooter RPS limits (Kraken X60 free ~90 RPS @ 12V)
-  private static final double SHOOTER_MAX_RPS = 85.0;
-  private static final double SHOOTER_RAMP_RPS_PER_SEC = 250.0;
-
-  // Shooter presets (RPS)
-  private static final double SHOOTER_IDLE_RPS = 10.0;
-  private static final double SHOOTER_CLOSE_RPS = 45.0;
-  private static final double SHOOTER_FAR_RPS = 65.0;
-
-  // Hood CAN ID (Kraken X44)
-  private static final int HOOD_CAN_ID = 12; // TODO set
-
-  // Hood motor behavior
-  private static final InvertedValue HOOD_INVERTED = InvertedValue.CounterClockwise_Positive;
-  private static final boolean HOOD_BRAKE_MODE = true; // hold angle when stopped
-
-  // Hood gear ratio (motor rotations / hood rotations) = 36.57:1 (motor:hood)
-  private static final double HOOD_SENSOR_TO_MECH_RATIO = 36.57;
-
-  // Hood position PID (Slot 0)
-  private static final double HOOD_kP = 60.0; // TODO tune
-  private static final double HOOD_kI = 0.0;
-  private static final double HOOD_kD = 0.0;
-
-  // Optional hood gravity/feedforward
-  private static final GravityTypeValue HOOD_GRAVITY_TYPE = GravityTypeValue.Arm_Cosine;
-  private static final double HOOD_kS = 0.0;
-  private static final double HOOD_kG = 0.0; // TODO set if hood droops
-  private static final double HOOD_kV = 0.0;
-  private static final double HOOD_kA = 0.0;
-
-  // Hood limits (degrees)
-  private static final double HOOD_MIN_DEG = 0.0; // TODO set
-  private static final double HOOD_MAX_DEG = 60.0; // TODO set
-
-  // Hood current limiting
-  private static final boolean HOOD_ENABLE_STATOR_LIMIT = true;
-  private static final double HOOD_STATOR_LIMIT_AMPS = 40.0;
-
-  // Hood presets (degrees)
-  private static final double HOOD_CLOSE_DEG = 20.0;
-  private static final double HOOD_FAR_DEG = 40.0;
-
-  // =========================================================================
-  // HARDWARE / INTERNALS (do not touch)
-  // =========================================================================
-
-  // Shooter motors
-  private final TalonFX shooterLeader = new TalonFX(LEADER_CAN_ID, CAN_BUS);
-  private final TalonFX shooterFollower1 = new TalonFX(FOLLOWER1_CAN_ID, CAN_BUS);
-  private final TalonFX shooterFollower2 = new TalonFX(FOLLOWER2_CAN_ID, CAN_BUS);
-
-  private final VelocityVoltage shooterLeaderRequest = new VelocityVoltage(0).withSlot(0);
-
-  // ✅ FIX: Your Phoenix version expects MotorAlignmentValue (not boolean, not
-  // TalonFX object)
-  private final Follower follower1Request = new Follower(LEADER_CAN_ID, FOLLOWER1_ALIGNMENT);
-  private final Follower follower2Request = new Follower(LEADER_CAN_ID, FOLLOWER2_ALIGNMENT);
-
-  private final SlewRateLimiter shooterSetpointLimiter = new SlewRateLimiter(SHOOTER_RAMP_RPS_PER_SEC);
+  /** 📉 Slew rate limiter to smooth out shooter speed changes */
+  private final SlewRateLimiter shooterSetpointLimiter = new SlewRateLimiter(kShooterRampRPSPerSec);
 
   private double shooterTargetRps = 0.0;
-
-  // Hood motor (position PID)
-  private final TalonFX hoodMotor = new TalonFX(HOOD_CAN_ID, CAN_BUS);
-  private final PositionVoltage hoodPositionRequest = new PositionVoltage(0).withSlot(0);
-
-  private double hoodTargetDeg = HOOD_MIN_DEG;
+  private double hoodTargetDeg = kHoodMinDeg;
 
   // =========================================================================
   // CONSTRUCTOR
@@ -160,46 +83,40 @@ public class Launcher extends SubsystemBase {
     configureHood();
 
     stop();
-    setHoodDeg(hoodTargetDeg);
+    setHoodDegrees(hoodTargetDeg);
   }
 
   // -------------------------
   // Shooter config
   // -------------------------
   private void configureShooterLeader() {
-    TalonFXConfiguration cfg = new TalonFXConfiguration();
+    TalonFXConfiguration config = new TalonFXConfiguration();
 
-    cfg.Feedback.SensorToMechanismRatio = SHOOTER_SENSOR_TO_MECH_RATIO;
+    // 1:1 ratio
+    config.Feedback.SensorToMechanismRatio = 1.0;
 
-    cfg.MotorOutput.NeutralMode = SHOOTER_BRAKE_MODE ? NeutralModeValue.Brake : NeutralModeValue.Coast;
-    cfg.MotorOutput.Inverted = LEADER_INVERTED;
+    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
-    Slot0Configs s0 = cfg.Slot0;
-    s0.kP = SHOOTER_kP;
-    s0.kI = SHOOTER_kI;
-    s0.kD = SHOOTER_kD;
-    s0.kS = SHOOTER_kS;
-    s0.kV = SHOOTER_kV;
-    s0.kA = SHOOTER_kA;
+    Slot0Configs slot0 = config.Slot0;
+    slot0.kP = kShooterP;
+    slot0.kI = kShooterI;
+    slot0.kD = kShooterD;
+    slot0.kS = kShooterS;
+    slot0.kV = kShooterV;
+    slot0.kA = kShooterA;
 
-    CurrentLimitsConfigs cl = cfg.CurrentLimits;
-    cl.StatorCurrentLimitEnable = SHOOTER_ENABLE_STATOR_LIMIT;
-    cl.StatorCurrentLimit = SHOOTER_STATOR_LIMIT_AMPS;
+    CurrentLimitsConfigs currentLimits = config.CurrentLimits;
+    currentLimits.StatorCurrentLimitEnable = kShooterEnableStatorLimit;
+    currentLimits.StatorCurrentLimit = kShooterStatorLimitAmps;
 
-    shooterLeader.getConfigurator().apply(cfg);
+    shooterLeader.getConfigurator().apply(config);
   }
 
   private void configureShooterFollower(TalonFX motor) {
-    TalonFXConfiguration cfg = new TalonFXConfiguration();
-
-    cfg.Feedback.SensorToMechanismRatio = SHOOTER_SENSOR_TO_MECH_RATIO;
-    cfg.MotorOutput.NeutralMode = SHOOTER_BRAKE_MODE ? NeutralModeValue.Brake : NeutralModeValue.Coast;
-
-    CurrentLimitsConfigs cl = cfg.CurrentLimits;
-    cl.StatorCurrentLimitEnable = SHOOTER_ENABLE_STATOR_LIMIT;
-    cl.StatorCurrentLimit = SHOOTER_STATOR_LIMIT_AMPS;
-
-    motor.getConfigurator().apply(cfg);
+    TalonFXConfiguration config = new TalonFXConfiguration();
+    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    motor.getConfigurator().apply(config);
   }
 
   // -------------------------
@@ -208,25 +125,25 @@ public class Launcher extends SubsystemBase {
   private void configureHood() {
     TalonFXConfiguration cfg = new TalonFXConfiguration();
 
-    cfg.Feedback.SensorToMechanismRatio = HOOD_SENSOR_TO_MECH_RATIO;
+    cfg.Feedback.SensorToMechanismRatio = kHoodGearRatio;
 
-    cfg.MotorOutput.NeutralMode = HOOD_BRAKE_MODE ? NeutralModeValue.Brake : NeutralModeValue.Coast;
-    cfg.MotorOutput.Inverted = HOOD_INVERTED;
+    cfg.MotorOutput.NeutralMode = kHoodEnableStatorLimit ? NeutralModeValue.Brake : NeutralModeValue.Coast;
+    cfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
     Slot0Configs s0 = cfg.Slot0;
-    s0.kP = HOOD_kP;
-    s0.kI = HOOD_kI;
-    s0.kD = HOOD_kD;
+    s0.kP = kHoodP;
+    s0.kI = kHoodI;
+    s0.kD = kHoodD;
 
-    s0.GravityType = HOOD_GRAVITY_TYPE;
-    s0.kS = HOOD_kS;
-    s0.kG = HOOD_kG;
-    s0.kV = HOOD_kV;
-    s0.kA = HOOD_kA;
+    s0.GravityType = GravityTypeValue.Arm_Cosine;
+    s0.kS = kHoodS;
+    s0.kG = kHoodG;
+    s0.kV = kHoodV;
+    s0.kA = kHoodA;
 
     CurrentLimitsConfigs cl = cfg.CurrentLimits;
-    cl.StatorCurrentLimitEnable = HOOD_ENABLE_STATOR_LIMIT;
-    cl.StatorCurrentLimit = HOOD_STATOR_LIMIT_AMPS;
+    cl.StatorCurrentLimitEnable = kHoodEnableStatorLimit;
+    cl.StatorCurrentLimit = kHoodStatorLimitAmps;
 
     hoodMotor.getConfigurator().apply(cfg);
   }
@@ -235,34 +152,47 @@ public class Launcher extends SubsystemBase {
   // CONTROL API
   // =========================================================================
 
+  /**
+   * Set the shooter target speed.
+   * 
+   * @param rps Target rotations per second for the flywheels.
+   */
   public void setShooterRps(double rps) {
-    shooterTargetRps = clamp(rps, 0.0, SHOOTER_MAX_RPS);
+    shooterTargetRps = clamp(rps, 0.0, kShooterMaxRPS);
   }
 
-  public void setHoodDeg(double deg) {
-    hoodTargetDeg = clamp(deg, HOOD_MIN_DEG, HOOD_MAX_DEG);
+  /**
+   * Set the hood target angle.
+   * 
+   * @param deg Target angle in degrees.
+   */
+  public void setHoodDegrees(double deg) {
+    hoodTargetDeg = clamp(deg, kHoodMinDeg, kHoodMaxDeg);
   }
 
+  /** 👋 Stops all motors in the launcher. */
   public void stop() {
     setShooterRps(0.0);
     shooterLeader.stopMotor();
     shooterFollower1.stopMotor();
     shooterFollower2.stopMotor();
-    // Hood keeps holding target.
   }
 
+  /** 🏎️ Sets shooter to idle speed. */
   public void idleShooter() {
-    setShooterRps(SHOOTER_IDLE_RPS);
+    setShooterRps(kShooterIdleRPS);
   }
 
+  /** 📏 Sets up the launcher for a close-range shot. */
   public void setCloseShot() {
-    setShooterRps(SHOOTER_CLOSE_RPS);
-    setHoodDeg(HOOD_CLOSE_DEG);
+    setShooterRps(kShooterCloseRPS);
+    setHoodDegrees(kHoodCloseDeg);
   }
 
+  /** 📏 Sets up the launcher for a far-range shot. */
   public void setFarShot() {
-    setShooterRps(SHOOTER_FAR_RPS);
-    setHoodDeg(HOOD_FAR_DEG);
+    setShooterRps(kShooterFarRPS);
+    setHoodDegrees(kHoodFarDeg);
   }
 
   // =========================================================================
@@ -320,22 +250,49 @@ public class Launcher extends SubsystemBase {
   // COMMANDS
   // =========================================================================
 
+  /**
+   * Command to stop all launcher motors.
+   * 
+   * @return A command that stops the launcher.
+   */
   public Command stopCommand() {
     return runOnce(this::stop);
   }
 
+  /**
+   * Command to set the launcher for a close shot.
+   * 
+   * @return A command that configures the launcher for a close shot.
+   */
   public Command closeShotCommand() {
     return runOnce(this::setCloseShot);
   }
 
+  /**
+   * Command to set the launcher for a far shot.
+   * 
+   * @return A command that configures the launcher for a far shot.
+   */
   public Command farShotCommand() {
     return runOnce(this::setFarShot);
   }
 
-  public Command setHoodDegCommand(double deg) {
-    return runOnce(() -> setHoodDeg(deg));
+  /**
+   * Command to set the hood to a specific angle.
+   * 
+   * @param deg The target angle in degrees.
+   * @return A command that sets the hood angle.
+   */
+  public Command setHoodDegreesCommand(double deg) {
+    return runOnce(() -> setHoodDegrees(deg));
   }
 
+  /**
+   * Command to run the shooter at a specific RPS, then stop it.
+   * 
+   * @param rps The target rotations per second for the shooter.
+   * @return A command that runs the shooter and then stops it.
+   */
   public Command runShooterRpsCommand(double rps) {
     return run(() -> setShooterRps(rps)).finallyDo(i -> setShooterRps(0.0));
   }
@@ -348,6 +305,9 @@ public class Launcher extends SubsystemBase {
    * Test shooter LEADER motor only at a specific RPS.
    * Followers will NOT move in this mode.
    * Use for hardware/wiring validation.
+   * 
+   * @param rps The target rotations per second for the leader motor.
+   * @return A command to test the shooter leader.
    */
   public Command testShooterLeaderCommand(double rps) {
     return run(() -> {
@@ -363,6 +323,9 @@ public class Launcher extends SubsystemBase {
    * Test shooter FOLLOWER 1 motor only at a specific RPS.
    * Leader and Follower 2 will NOT move.
    * Use for hardware/wiring validation.
+   * 
+   * @param rps The target rotations per second for follower 1.
+   * @return A command to test shooter follower 1.
    */
   public Command testShooterFollower1Command(double rps) {
     return run(() -> {
@@ -378,6 +341,9 @@ public class Launcher extends SubsystemBase {
    * Test shooter FOLLOWER 2 motor only at a specific RPS.
    * Leader and Follower 1 will NOT move.
    * Use for hardware/wiring validation.
+   * 
+   * @param rps The target rotations per second for follower 2.
+   * @return A command to test shooter follower 2.
    */
   public Command testShooterFollower2Command(double rps) {
     return run(() -> {
@@ -393,13 +359,16 @@ public class Launcher extends SubsystemBase {
    * Test hood motor at a specific target angle in degrees.
    * Shooter motors will NOT move.
    * Use for hardware/wiring validation.
+   * 
+   * @param targetDeg The target angle in degrees for the hood.
+   * @return A command to test the hood motor.
    */
   public Command testHoodCommand(double targetDeg) {
     return run(() -> {
       shooterLeader.stopMotor();
       shooterFollower1.stopMotor();
       shooterFollower2.stopMotor();
-      double hoodRot = clamp(targetDeg, HOOD_MIN_DEG, HOOD_MAX_DEG) / 360.0;
+      double hoodRot = clamp(targetDeg, kHoodMinDeg, kHoodMaxDeg) / 360.0;
       hoodMotor.setControl(hoodPositionRequest.withPosition(hoodRot));
     });
   }
@@ -408,6 +377,14 @@ public class Launcher extends SubsystemBase {
   // UTIL
   // =========================================================================
 
+  /**
+   * Clamps a value between a minimum and maximum.
+   * 
+   * @param val The value to clamp.
+   * @param min The minimum allowed value.
+   * @param max The maximum allowed value.
+   * @return The clamped value.
+   */
   private static double clamp(double val, double min, double max) {
     return Math.max(min, Math.min(max, val));
   }

@@ -1,46 +1,86 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.MechanismIds;
 
+import frc.robot.Constants.ClimberConstants;
+import frc.robot.Constants.CANBus;
+
+/**
+ * Climber subsystem:
+ * - Controls the robot's climb mechanism.
+ * - Single motor control with brake mode enabled for safety.
+ */
 public class Climber extends SubsystemBase {
-    private final TalonFX m_climberMotor = new TalonFX(MechanismIds.kClimberID);
 
     // =========================================================================
-    // STUDENT ADJUSTMENT AREA: CLIMB SPEED Here
+    // HARDWARE / INTERNALS
     // =========================================================================
-    private static final double kClimbPower = 0.8;
+
+    /** ✅ Climber Motor (TalonFX) */
+    private final TalonFX motor = new TalonFX(ClimberConstants.kClimberID, CANBus.kDefaultBus);
 
     public Climber() {
-        // SAFETY: Brake mode is CRITICAL for climbers to prevent falling when disabled
-        // Without brake mode, the robot will drop when the motor is not powered!
-        var cfg = new com.ctre.phoenix6.configs.TalonFXConfiguration();
-        cfg.MotorOutput.NeutralMode = com.ctre.phoenix6.signals.NeutralModeValue.Brake;
-        m_climberMotor.getConfigurator().apply(cfg);
+        configureMotor();
+        stop();
     }
 
+    private void configureMotor() {
+        TalonFXConfiguration config = new TalonFXConfiguration();
+
+        // CRITICAL: Set to brake mode so the robot doesn't slide down after power is
+        // cut.
+        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+
+        CurrentLimitsConfigs currentLimits = config.CurrentLimits;
+        currentLimits.StatorCurrentLimitEnable = ClimberConstants.kEnableStatorLimit;
+        currentLimits.StatorCurrentLimit = ClimberConstants.kStatorLimitAmps;
+
+        motor.getConfigurator().apply(config);
+    }
+
+    // =========================================================================
+    // CONTROL API
+    // =========================================================================
+
+    /** 👋 Stop the climber motor. */
+    public void stop() {
+        motor.stopMotor();
+    }
+
+    /** 🧗 Climb UP at default power. */
+    public void climb() {
+        motor.set(ClimberConstants.kClimbPower);
+    }
+
+    /** 🧗 Reverse the climber. */
+    public void reverseClimb() {
+        motor.set(ClimberConstants.kClimbReversePower);
+    }
+
+    // =========================================================================
+    // COMMANDS
+    // =========================================================================
+
+    /** 🎯 Command to climb. */
     public Command climbCommand() {
-        return this.runEnd(
-                () -> m_climberMotor.set(kClimbPower),
-                () -> m_climberMotor.stopMotor());
+        return run(this::climb).finallyDo(interrupted -> stop());
     }
 
+    /** 🎯 Command to reverse climb. */
     public Command reverseClimbCommand() {
-        return this.runEnd(
-                () -> m_climberMotor.set(-kClimbPower),
-                () -> m_climberMotor.stopMotor());
+        return run(this::reverseClimb).finallyDo(interrupted -> stop());
     }
 
-    /**
-     * Test climber motor at specific percent output (-1.0 to 1.0) for hardware
-     * validation.
-     * Use this to verify motor wiring, direction, and brake mode.
-     */
-    public Command testMotorCommand(double percentOutput) {
-        return this.runEnd(
-                () -> m_climberMotor.set(percentOutput),
-                () -> m_climberMotor.stopMotor());
+    /** 👋 Command to stop the climber. */
+    public Command stopCommand() {
+        return runOnce(this::stop);
     }
 }

@@ -15,53 +15,22 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import static frc.robot.Constants.LaunchFeederConstants.*;
+import static frc.robot.Constants.CANBus.kDefaultBus;
+
 public class LaunchFeeder extends SubsystemBase {
-
-  // =========================================================================
-  // STUDENT ADJUSTMENT AREA: Launcher Feeder Settings
-  // =========================================================================
-
-  private static final int FEEDER_CAN_ID = 13;
-  private static final int CANRANGE_CAN_ID = 30;
-  private static final String CAN_BUS = "rio";
-
-  private static final InvertedValue INVERTED = InvertedValue.CounterClockwise_Positive;
-  private static final boolean BRAKE_MODE = false;
-
-  private static final double SENSOR_TO_MECH_RATIO = 1.0;
-
-  private static final double kP = 0.12;
-  private static final double kI = 0.0;
-  private static final double kD = 0.0;
-
-  private static final double kS = 0.0;
-  private static final double kV = 0.12;
-  private static final double kA = 0.0;
-
-  private static final boolean ENABLE_STATOR_LIMIT = true;
-  private static final double STATOR_LIMIT_AMPS = 60.0;
-
-  private static final double MAX_RPS = 80.0;
-  private static final double RAMP_RPS_PER_SEC = 300;
-
-  private static final double FEED_IN_RPS = 40.0;
-  private static final double FEED_OUT_RPS = -30.0;
-
-  private static final double BALL_DETECT_DISTANCE_M = 0.12;
-  private static final double BALL_DETECT_DEBOUNCE_SEC = 0.05;
-  private static final boolean AUTO_STOP_ON_BALL = true;
 
   // =========================================================================
   // HARDWARE / INTERNALS (do not touch)
   // =========================================================================
 
-  private final TalonFX motor = new TalonFX(FEEDER_CAN_ID, CAN_BUS);
-  private final CANrange canrange = new CANrange(CANRANGE_CAN_ID, CAN_BUS);
+  private final TalonFX motor = new TalonFX(kFeederID, kDefaultBus);
+  private final CANrange canrange = new CANrange(kCANrangeID, kDefaultBus);
 
   private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
-  private final SlewRateLimiter rpsLimiter = new SlewRateLimiter(RAMP_RPS_PER_SEC);
+  private final SlewRateLimiter rpsLimiter = new SlewRateLimiter(kRampRPSPerSec);
 
-  private final Debouncer ballDebouncer = new Debouncer(BALL_DETECT_DEBOUNCE_SEC, Debouncer.DebounceType.kRising);
+  private final Debouncer ballDebouncer = new Debouncer(kBallDebounceSeconds, Debouncer.DebounceType.kRising);
 
   private double targetRps = 0.0;
 
@@ -73,22 +42,22 @@ public class LaunchFeeder extends SubsystemBase {
   private void configureMotor() {
     TalonFXConfiguration config = new TalonFXConfiguration();
 
-    config.Feedback.SensorToMechanismRatio = SENSOR_TO_MECH_RATIO;
+    config.Feedback.SensorToMechanismRatio = 1.0;
 
-    config.MotorOutput.NeutralMode = BRAKE_MODE ? NeutralModeValue.Brake : NeutralModeValue.Coast;
-    config.MotorOutput.Inverted = INVERTED;
+    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
     Slot0Configs slot0 = config.Slot0;
     slot0.kP = kP;
     slot0.kI = kI;
     slot0.kD = kD;
-    slot0.kS = kS;
-    slot0.kV = kV;
-    slot0.kA = kA;
+    slot0.kS = 0.0;
+    slot0.kV = 0.12; // Static for now or tuneable
+    slot0.kA = 0.0;
 
     CurrentLimitsConfigs currentLimits = config.CurrentLimits;
-    currentLimits.StatorCurrentLimitEnable = ENABLE_STATOR_LIMIT;
-    currentLimits.StatorCurrentLimit = STATOR_LIMIT_AMPS;
+    currentLimits.StatorCurrentLimitEnable = kEnableStatorLimit;
+    currentLimits.StatorCurrentLimit = kStatorLimitAmps;
 
     motor.getConfigurator().apply(config);
   }
@@ -105,7 +74,7 @@ public class LaunchFeeder extends SubsystemBase {
   @Logged(name = "LauncherFeeder/BallDetected")
   public boolean hasBall() {
     double d = getDistanceMeters();
-    boolean raw = d > 0.0 && d < BALL_DETECT_DISTANCE_M;
+    boolean raw = d > 0.0 && d < kBallDetectionDistanceMeters;
     return ballDebouncer.calculate(raw);
   }
 
@@ -114,11 +83,11 @@ public class LaunchFeeder extends SubsystemBase {
   // =========================================================================
 
   public void feederIn() {
-    setRps(FEED_IN_RPS);
+    setRps(kFeedInRPS);
   }
 
   public void feederOut() {
-    setRps(FEED_OUT_RPS);
+    setRps(kFeedOutRPS);
   }
 
   // =========================================================================
@@ -126,7 +95,7 @@ public class LaunchFeeder extends SubsystemBase {
   // =========================================================================
 
   public void setRps(double rps) {
-    targetRps = clamp(rps, -MAX_RPS, MAX_RPS);
+    targetRps = clamp(rps, -kMaxRPS, kMaxRPS);
   }
 
   public void stop() {
@@ -164,7 +133,7 @@ public class LaunchFeeder extends SubsystemBase {
 
   @Override
   public void periodic() {
-    if (AUTO_STOP_ON_BALL && targetRps > 0.0 && hasBall()) {
+    if (kAutoStopOnBall && targetRps > 0.0 && hasBall()) {
       stop();
       return;
     }
@@ -184,11 +153,11 @@ public class LaunchFeeder extends SubsystemBase {
   }
 
   public Command feederInCommand() {
-    return run(this::feederIn).finallyDo(interrupted -> stop());
+    return feederCommand(kFeedInRPS);
   }
 
   public Command feederOutCommand() {
-    return run(this::feederOut).finallyDo(interrupted -> stop());
+    return feederCommand(kFeedOutRPS);
   }
 
   /** ✅ NEW: matches your RobotContainer "40% constant" style */
