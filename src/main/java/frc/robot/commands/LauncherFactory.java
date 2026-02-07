@@ -2,7 +2,6 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.FloorFeeder;
 import frc.robot.subsystems.LaunchFeeder;
 import frc.robot.subsystems.Launcher;
@@ -57,13 +56,7 @@ public final class LauncherFactory {
     return Commands.parallel(
         launcher.runShooterRpsCommand(launcherRps),
         floorFeeder.feederCommand(floorFeederRps),
-        launchFeeder.feederCommand(launchFeederRps))
-        .finallyDo(
-            interrupted -> {
-              CommandScheduler.getInstance().schedule(floorFeeder.stopCommand());
-              CommandScheduler.getInstance().schedule(launchFeeder.stopCommand());
-              CommandScheduler.getInstance().schedule(launcher.runShooterRpsCommand(0.0));
-            });
+        launchFeeder.feederCommand(launchFeederRps));
   }
 
   private static double clamp(double val, double min, double max) {
