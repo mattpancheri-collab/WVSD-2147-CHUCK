@@ -14,10 +14,11 @@ public class Climber extends SubsystemBase {
     private static final double kClimbPower = 0.8;
 
     public Climber() {
-        // TODO: STUDENTS - Ensure brake mode is ON so we don't fall!
-        // var cfg = new TalonFXConfiguration();
-        // cfg.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        // m_climberMotor.getConfigurator().apply(cfg);
+        // SAFETY: Brake mode is CRITICAL for climbers to prevent falling when disabled
+        // Without brake mode, the robot will drop when the motor is not powered!
+        var cfg = new com.ctre.phoenix6.configs.TalonFXConfiguration();
+        cfg.MotorOutput.NeutralMode = com.ctre.phoenix6.signals.NeutralModeValue.Brake;
+        m_climberMotor.getConfigurator().apply(cfg);
     }
 
     public Command climbCommand() {

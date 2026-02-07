@@ -24,9 +24,19 @@ If you change a motor controller on the robot, you need to update its ID here:
 -   **Look for**: `MechanismIds` class.
 
 ### 2. Tuning Speeds & PID
-Each subsystem has specific variables for speeds (RPM, % Output) and PID gains at the top of the file.
--   **Files**: `subsystems/Launcher.java`, `subsystems/IntakeFloor.java`, etc.
--   **Look for**: `kTargetRPM`, `kIntakeSpeed`, etc.
+Each subsystem has configuration constants at the top of its file.
+
+**For Velocity-Controlled Subsystems** (Launcher, Feeders, IntakeFloor):
+-   **Files**: `subsystems/LaunchFeeder.java`, `subsystems/FloorFeeder.java`, etc.
+-   **Target Speed Constants**: `FEED_IN_RPS`, `IN_RPS`, `kTargetRPM`
+-   **PID Constants**: `kP`, `kI`, `kD` (Start with kP, leave kI and kD at 0)
+-   **Tuning Tip**: Increase kP until the motor reaches target speed quickly without oscillation
+
+**For Position-Controlled Subsystems** (IntakePivot):
+-   **File**: `subsystems/IntakePivot.java`
+-   **Position Presets**: `STOW_DEG`, `AMP_DEG`
+-   **PID Constants**: `kP`, `kG` (gravity compensation)
+-   **Feedforward**: `kV`, `kA` for smooth motion
 
 ### 3. Binding Buttons
 To make a button do something (like run the intake), go to the container.
@@ -36,14 +46,20 @@ To make a button do something (like run the intake), go to the container.
 
 ## 🧩 Subsystems Overview
 
-| Subsystem | Description |
-| :--- | :--- |
-| **Launcher** | Controls the main shooter wheels. Tune RPMs here. |
-| **LaunchFeeder** | Feeds the game piece into the Launcher. |
-| **FloorFeeder** | Moves game pieces from the intake to the center. |
-| **IntakePivot** | Rotates the intake in and out (Deployed/Stowed). |
-| **IntakeFloor** | Spins the intake rollers to grab game pieces. |
-| **Climber** | Controls the arms to pull the robot onto the chain. |
+| Subsystem | Description | Control Type |
+| :--- | :--- | :--- |
+| **Launcher** | Dual-motor shooter with velocity PID control | Velocity (RPS) |
+| **LaunchFeeder** | Feeder with CANrange sensor for game piece detection | Velocity (RPS) |
+| **FloorFeeder** | Intake feeder with current limiting and slew rate control | Velocity (RPS) |
+| **IntakePivot** | Position-controlled pivot with gravity compensation | Position (Degrees) |
+| **IntakeFloor** | Floor intake roller with velocity control | Velocity (RPS) |
+| **Climber** | Simple climber with brake mode enabled for safety | Percent Output |
+
+### Advanced Features
+- **PID Control**: Most subsystems use **closed-loop velocity** or **position** control with tunable kP, kI, kD gains
+- **Telemetry Logging**: Subsystems use `@Logged` annotations for automatic data logging via WPILib Epilogue
+- **Simulation Support**: IntakePivot and FloorFeeder include simulation models for testing without hardware
+- **Current Limiting**: All TalonFX motors have stator current limits to prevent brownouts
 
 ## 📦 Deployment
 1.  Connect to the robot via USB or Wi-Fi.

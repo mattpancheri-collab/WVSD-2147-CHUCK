@@ -37,12 +37,12 @@ public final class Constants {
         public static final int kLauncherRightID = 11;
 
         // Feeders
-        public static final int kLaunchFeederID = 12;
-        public static final int kFloorFeederID = 13;
+        public static final int kLaunchFeederID = 13;
+        public static final int kFloorFeederID = 14;
 
         // Intake
-        public static final int kIntakePivotID = 14;
-        public static final int kIntakeFloorID = 15;
+        public static final int kIntakePivotID = 15;
+        public static final int kIntakeFloorID = 16;
 
         // Climber
         public static final int kClimberID = 16;
