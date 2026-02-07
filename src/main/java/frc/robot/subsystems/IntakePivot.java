@@ -39,8 +39,7 @@ public class IntakePivot extends SubsystemBase {
 
   public IntakePivot() {
     configureMotor();
-    stop();
-    setAngleDeg(targetAngleDeg);
+    setAngleDeg(IntakePivotConstants.kStowAngleDeg);
   }
 
   private void configureMotor() {
