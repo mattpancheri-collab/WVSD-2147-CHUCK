@@ -42,7 +42,7 @@
       "IsEncoderInverted": true,
       "IsSteerInverted": false,
       "SelectedEncoderType": "CANcoder",
-      "EncoderOffset": -0.01708984375,
+      "EncoderOffset": 0.007568359375,
       "DriveMotorSelectionState": 1,
       "SteerMotorSelectionState": 1,
       "SteerEncoderSelectionState": 1,
@@ -91,7 +91,7 @@
       "IsEncoderInverted": true,
       "IsSteerInverted": false,
       "SelectedEncoderType": "CANcoder",
-      "EncoderOffset": -0.2978515625,
+      "EncoderOffset": 0.299560546875,
       "DriveMotorSelectionState": 1,
       "SteerMotorSelectionState": 1,
       "SteerEncoderSelectionState": 1,
@@ -112,7 +112,7 @@
         "SelectedMotorType": null
       },
       "SteerMotor": {
-        "Id": 8,
+        "Id": 7,
         "Name": "BackLeftSteer",
         "Model": "Talon FX vers. C",
         "CANbus": "rio",
@@ -125,7 +125,7 @@
         }
       },
       "DriveMotor": {
-        "Id": 7,
+        "Id": 8,
         "Name": "BackLeftDrive",
         "Model": "Talon FX vers. C",
         "CANbus": "rio",
@@ -140,7 +140,7 @@
       "IsEncoderInverted": true,
       "IsSteerInverted": false,
       "SelectedEncoderType": "CANcoder",
-      "EncoderOffset": -0.2705078125,
+      "EncoderOffset": 0.3701171875,
       "DriveMotorSelectionState": 1,
       "SteerMotorSelectionState": 1,
       "SteerEncoderSelectionState": 1,
@@ -189,7 +189,7 @@
       "IsEncoderInverted": true,
       "IsSteerInverted": false,
       "SelectedEncoderType": "CANcoder",
-      "EncoderOffset": 0.293212890625,
+      "EncoderOffset": 0.22705078125,
       "DriveMotorSelectionState": 1,
       "SteerMotorSelectionState": 1,
       "SteerEncoderSelectionState": 1,

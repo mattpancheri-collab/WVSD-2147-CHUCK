@@ -1,5 +1,8 @@
 package frc.robot.subsystems;
 
+import static frc.robot.Constants.CANBus.kDefaultBus;
+import static frc.robot.Constants.LaunchFeederConstants.*;
+
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -9,30 +12,32 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
-import static frc.robot.Constants.LaunchFeederConstants.*;
-import static frc.robot.Constants.CANBus.kDefaultBus;
 
 public class LaunchFeeder extends SubsystemBase {
 
-  // =========================================================================
-  // HARDWARE / INTERNALS (do not touch)
-  // =========================================================================
-
   private final TalonFX motor = new TalonFX(kFeederID, kDefaultBus);
-  private final CANrange canrange = new CANrange(kCANrangeID, kDefaultBus);
 
   private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
+
   private final SlewRateLimiter rpsLimiter = new SlewRateLimiter(kRampRPSPerSec);
 
-  private final Debouncer ballDebouncer = new Debouncer(kBallDebounceSeconds, Debouncer.DebounceType.kRising);
+  private final CANrange canrange = kEnableCANrange ? new CANrange(kCANrangeID, kDefaultBus) : null;
+
+  private final Debouncer ballDebouncer =
+      new Debouncer(kBallDebounceSeconds, Debouncer.DebounceType.kRising);
 
   private double targetRps = 0.0;
+
+  private boolean voltageOverride = false;
+  private double voltageDemand = 0.0;
+
+  // DEBUG: keep prints from spamming every 20ms
+  private int debugCounter = 0;
 
   public LaunchFeeder() {
     configureMotor();
@@ -45,14 +50,15 @@ public class LaunchFeeder extends SubsystemBase {
     config.Feedback.SensorToMechanismRatio = 1.0;
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     Slot0Configs slot0 = config.Slot0;
     slot0.kP = kP;
     slot0.kI = kI;
     slot0.kD = kD;
+
     slot0.kS = 0.0;
-    slot0.kV = 0.12; // Static for now or tuneable
+    slot0.kV = 0.12;
     slot0.kA = 0.0;
 
     CurrentLimitsConfigs currentLimits = config.CurrentLimits;
@@ -62,26 +68,21 @@ public class LaunchFeeder extends SubsystemBase {
     motor.getConfigurator().apply(config);
   }
 
-  // =========================================================================
   // SENSOR (CANrange)
-  // =========================================================================
-
-  @Logged(name = "LauncherFeeder/CANrangeDistanceM")
   public double getDistanceMeters() {
+    if (canrange == null) return Double.NaN;
     return canrange.getDistance().getValueAsDouble();
   }
 
-  @Logged(name = "LauncherFeeder/BallDetected")
   public boolean hasBall() {
+    if (canrange == null) return false;
+
     double d = getDistanceMeters();
     boolean raw = d > 0.0 && d < kBallDetectionDistanceMeters;
     return ballDebouncer.calculate(raw);
   }
 
-  // =========================================================================
   // HELPERS
-  // =========================================================================
-
   public void feederIn() {
     setRps(kFeedInRPS);
   }
@@ -90,51 +91,65 @@ public class LaunchFeeder extends SubsystemBase {
     setRps(kFeedOutRPS);
   }
 
-  // =========================================================================
   // CONTROL API
-  // =========================================================================
-
   public void setRps(double rps) {
+    voltageOverride = false;
+    voltageDemand = 0.0;
+
     targetRps = clamp(rps, -kMaxRPS, kMaxRPS);
   }
 
-  public void stop() {
+  public void setVoltage(double volts) {
+    // DEBUG: proves the button/command is actually calling this
+    System.out.println("[LaunchFeeder] setVoltage called: " + volts);
+
+    voltageOverride = true;
+    voltageDemand = clamp(volts, -12.0, 12.0);
+
     targetRps = 0.0;
-    motor.stopMotor();
+    rpsLimiter.reset(0.0);
   }
 
-  // =========================================================================
-  // TELEMETRY
-  // =========================================================================
+  public void stop() {
+    voltageOverride = false;
+    voltageDemand = 0.0;
+    targetRps = 0.0;
 
-  @Logged(name = "LauncherFeeder/TargetRPS")
-  public double getTargetRps() {
-    return targetRps;
+    rpsLimiter.reset(0.0);
+
+    motor.setVoltage(0.0);
   }
 
-  @Logged(name = "LauncherFeeder/VelocityRPS")
-  public double getVelocityRps() {
-    return motor.getVelocity().getValueAsDouble();
-  }
-
-  @Logged(name = "LauncherFeeder/AppliedVolts")
-  public double getVoltage() {
-    return motor.getMotorVoltage().getValueAsDouble();
-  }
-
-  @Logged(name = "LauncherFeeder/StatorCurrentA")
-  public double getCurrent() {
-    return motor.getStatorCurrent().getValueAsDouble();
-  }
-
-  // =========================================================================
-  // PERIODIC
-  // =========================================================================
+  // SIMPLE GETTERS
+  public double getTargetRps() { return targetRps; }
+  public double getVelocityRps() { return motor.getVelocity().getValueAsDouble(); }
+  public double getAppliedVolts() { return motor.getMotorVoltage().getValueAsDouble(); }
+  public double getStatorCurrentA() { return motor.getStatorCurrent().getValueAsDouble(); }
+  public boolean isVoltageOverride() { return voltageOverride; }
+  public double getVoltageDemand() { return voltageDemand; }
 
   @Override
   public void periodic() {
-    if (kAutoStopOnBall && targetRps > 0.0 && hasBall()) {
+    if (!voltageOverride && canrange != null && kAutoStopOnBall && targetRps > 0.0 && hasBall()) {
       stop();
+      return;
+    }
+
+    if (voltageOverride) {
+      motor.setVoltage(voltageDemand);
+
+      // DEBUG: print ~5x/sec
+      debugCounter++;
+      if (debugCounter % 10 == 0) {
+        System.out.println("[LaunchFeeder] demand=" + voltageDemand
+            + " applied=" + motor.getMotorVoltage().getValueAsDouble()
+            + " current=" + motor.getStatorCurrent().getValueAsDouble());
+
+            System.out.println("[LaunchFeeder] enabled=" + edu.wpi.first.wpilibj.DriverStation.isEnabled()
+            + " brownout=" + edu.wpi.first.wpilibj.RobotController.isBrownedOut()
+            + " batt=" + edu.wpi.first.wpilibj.RobotController.getBatteryVoltage());
+        
+      }
       return;
     }
 
@@ -142,44 +157,25 @@ public class LaunchFeeder extends SubsystemBase {
     motor.setControl(velocityRequest.withVelocity(limitedRps));
   }
 
-  // =========================================================================
   // COMMANDS
-  // =========================================================================
-
   public Command feedUntilBallCommand() {
-    return run(this::feederIn)
-        .until(this::hasBall)
-        .finallyDo(interrupted -> stop());
+    return Commands.startEnd(this::feederIn, this::stop, this).until(this::hasBall);
   }
 
-  public Command feederInCommand() {
-    return feederCommand(kFeedInRPS);
-  }
+  public Command feederInCommand() { return feederCommand(kFeedInRPS); }
+  public Command feederOutCommand() { return feederCommand(kFeedOutRPS); }
 
-  public Command feederOutCommand() {
-    return feederCommand(kFeedOutRPS);
-  }
-
-  /** ✅ NEW: matches your RobotContainer "40% constant" style */
   public Command feederCommand(double rps) {
-    return run(() -> setRps(rps)).finallyDo(interrupted -> stop());
+    return Commands.startEnd(() -> setRps(rps), this::stop, this);
   }
 
-  /**
-   * Test feeder motor at specific RPS for hardware validation.
-   * Use this to verify motor wiring and direction.
-   */
-  public Command testMotorCommand(double rps) {
-    return run(() -> setRps(rps)).finallyDo(interrupted -> stop());
+  public Command feederVoltageCommand(double volts) {
+    return Commands.startEnd(() -> setVoltage(volts), this::stop, this);
   }
 
   public Command stopCommand() {
     return runOnce(this::stop);
   }
-
-  // =========================================================================
-  // UTIL
-  // =========================================================================
 
   private static double clamp(double val, double min, double max) {
     return Math.max(min, Math.min(max, val));

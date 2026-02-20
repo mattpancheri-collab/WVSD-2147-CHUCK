@@ -2,93 +2,106 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+
 import frc.robot.subsystems.FloorFeeder;
-import frc.robot.subsystems.IntakeFloor;
+import frc.robot.subsystems.IntakeGround;
 import frc.robot.subsystems.IntakePivot;
 import frc.robot.subsystems.LaunchFeeder;
 
-/**
- * IntakeFactory builds multi-subsystem intake commands.
- *
- * Rules:
- * - Static methods only
- * - Do NOT store subsystems as fields
- * - Do NOT read joysticks here
- * - Only build and return Commands
- */
+import static frc.robot.Constants.TestingConstants.*;
+
 public final class IntakeFactory {
-  private IntakeFactory() {
+  private IntakeFactory() {}
+
+  public static Command deployAndIntakeChainVoltage(
+      IntakePivot intakePivot,
+      IntakeGround intakeGround,
+      FloorFeeder floorFeeder,
+      LaunchFeeder launchFeeder) {
+
+    final double pivotVolts  = clampVolts(kTestVoltsIntakePivot);
+    final double intakeVolts = clampVolts(kTestVoltsIntakeGround);
+    final double floorVolts  = clampVolts(kTestVoltsFloorFeeder);
+    final double launchVolts = clampVolts(kTestVoltsLaunchFeeder);
+
+    // Pivot: deploy while held, stow on release
+    Command pivotCmd = Commands.startEnd(
+        () -> intakePivot.setAngleDegrees(90.0),
+        () -> intakePivot.setAngleDegrees(0.0),
+        intakePivot
+    );
+
+    // Intake roller
+    Command intakeCmd = Commands.startEnd(
+        () -> intakeGround.setVoltage(+intakeVolts),
+        () -> intakeGround.setVoltage(0.0),
+        intakeGround
+    );
+
+    // Floor feeder
+    Command floorCmd = Commands.startEnd(
+        () -> floorFeeder.setVoltage(+floorVolts),
+        () -> floorFeeder.setVoltage(0.0),
+        floorFeeder
+    );
+
+    // Launch feeder
+    Command launchCmd = Commands.startEnd(
+        () -> launchFeeder.setVoltage(+launchVolts),
+        () -> launchFeeder.setVoltage(0.0),
+        launchFeeder
+    );
+
+    // Parallel group already stops on end because each is startEnd.
+    // (No finallyDo needed, so this works across WPILib versions.)
+    return Commands.parallel(pivotCmd, intakeCmd, floorCmd, launchCmd);
   }
 
-  /**
-   * Deploy intake + run intake chain at a PERCENT of each mechanism's max RPS.
-   *
-   * Behavior while held:
-   * - IntakePivot holds 90 deg (position PID)
-   * - IntakeFloor runs forward at 90% (velocity PID)
-   * - FloorFeeder runs forward at 90% (velocity PID)
-   * - LaunchFeeder runs forward at 90% UNTIL CANrange sees a ball, then it STOPS
-   * (intakeFloor + floorFeeder keep running regardless)
-   *
-   * Behavior on release/end:
-   * - IntakeFloor stops
-   * - FloorFeeder stops
-   * - LaunchFeeder stops
-   * - Pivot stows automatically
-   *
-   * @param intakePivot        pivot subsystem
-   * @param intakeFloor        floor intake roller subsystem
-   * @param floorFeeder        floor feeder subsystem
-   * @param launchFeeder       launcher feeder (CANrange beam break)
-   * @param deployDeg          pivot angle while held (use 90.0)
-   * @param stowDeg            pivot angle on release (handled by andThen)
-   * @param percent            0.0 to 1.0 (use 0.90 for 90%)
-   * @param intakeFloorMaxRps  max RPS cap used for percent -> RPS conversion
-   * @param floorFeederMaxRps  max RPS cap used for percent -> RPS conversion
-   * @param launchFeederMaxRps max RPS cap used for percent -> RPS conversion
-   */
+  // ---------------------------------------------------------------------------
+  // Your existing percent/RPS version (kept)
+  // ---------------------------------------------------------------------------
   public static Command deployAndIntakeChainPercent(
       IntakePivot intakePivot,
-      IntakeFloor intakeFloor,
+      IntakeGround intakeGround,
       FloorFeeder floorFeeder,
       LaunchFeeder launchFeeder,
       double deployDeg,
       double stowDeg,
       double percent,
-      double intakeFloorMaxRps,
-      double floorFeederMaxRps,
-      double launchFeederMaxRps) {
+      double intakeMaxRps,
+      double floorMaxRps,
+      double launchMaxRps) {
 
     final double p = clamp(percent, 0.0, 1.0);
 
-    final double intakeFloorRps = p * intakeFloorMaxRps;
-    final double floorFeederRps = p * floorFeederMaxRps;
-    final double launchFeederRps = p * launchFeederMaxRps;
+    final double intakeRps = p * intakeMaxRps;
+    final double floorRps = p * floorMaxRps;
+    final double launchRps = p * launchMaxRps;
 
-    // This command ONLY controls the launch feeder:
-    // - If ball detected => stop launch feeder
-    // - Else => run at launchFeederRps
     Command launchFeederAutoStop = Commands.run(
         () -> {
           if (launchFeeder.hasBall()) {
             launchFeeder.stop();
           } else {
-            launchFeeder.setRps(launchFeederRps);
+            launchFeeder.setRps(launchRps);
           }
         },
-        launchFeeder)
-        .finallyDo(interrupted -> launchFeeder.stop());
+        launchFeeder
+    ).finallyDo(i -> launchFeeder.stop()); // <-- if this errors, tell me and I'll swap it too
 
-    // Run everything in parallel; stow after released.
     return Commands.parallel(
         intakePivot.setAngleCommand(deployDeg),
-        intakeFloor.intakeCommand(intakeFloorRps),
-        floorFeeder.feederCommand(floorFeederRps),
-        launchFeederAutoStop)
-        .andThen(intakePivot.pivotStowCommand());
+        intakeGround.intakeCommand(intakeRps),
+        floorFeeder.feederCommand(floorRps),
+        launchFeederAutoStop
+    ).andThen(intakePivot.setAngleCommand(stowDeg));
   }
 
   private static double clamp(double val, double min, double max) {
     return Math.max(min, Math.min(max, val));
+  }
+
+  private static double clampVolts(double volts) {
+    return clamp(volts, -12.0, 12.0);
   }
 }

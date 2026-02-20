@@ -2,64 +2,54 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+
 import frc.robot.subsystems.FloorFeeder;
 import frc.robot.subsystems.LaunchFeeder;
 import frc.robot.subsystems.Launcher;
 
-/**
- * LauncherFactory builds launcher/shooter-related multi-subsystem commands.
- *
- * Rules:
- * - Static methods only
- * - Do NOT store subsystems as fields
- * - Do NOT read joysticks here
- * - Only build and return Commands
- */
-public final class LauncherFactory {
-  private LauncherFactory() {
-  }
+import static frc.robot.Constants.ShootingConstants.*;
 
-  /**
-   * While held:
-   * - Spin launcher flywheels at percent of max RPS
-   * - Run floor feeder at percent of max RPS
-   * - Run launch feeder at percent of max RPS
-   *
-   * On release/end:
-   * - Stop floor feeder
-   * - Stop launch feeder
-   * - Stop launcher
-   *
-   * @param launcher           shooter flywheels subsystem
-   * @param floorFeeder        intake/floor feeder subsystem
-   * @param launchFeeder       launcher feeder subsystem
-   * @param percent            0..1 (use 0.90 for 90%)
-   * @param launcherMaxRps     safe cap for shooter (RPS)
-   * @param floorFeederMaxRps  safe cap for floor feeder (RPS)
-   * @param launchFeederMaxRps safe cap for launch feeder (RPS)
-   */
-  public static Command shootFeedPercent(
+public final class LauncherFactory {
+  private LauncherFactory() {}
+
+  public static Command shootFeedVoltage(
       Launcher launcher,
       FloorFeeder floorFeeder,
-      LaunchFeeder launchFeeder,
-      double percent,
-      double launcherMaxRps,
-      double floorFeederMaxRps,
-      double launchFeederMaxRps) {
+      LaunchFeeder launchFeeder) {
 
-    final double p = clamp(percent, 0.0, 1.0);
+    // DO NOT apply polarity here.
+    // Polarity is applied inside Launcher.setVoltage() so everything is consistent.
+    final double shooterVolts = clamp(kShooterVolts);
 
-    final double launcherRps = p * launcherMaxRps;
-    final double floorFeederRps = p * floorFeederMaxRps;
-    final double launchFeederRps = p * launchFeederMaxRps;
+    // Feeders (usually no polarity needed; flip in subsystem if required)
+    final double floorFeederVolts  = clamp(kFloorFeederVolts);
+    final double launchFeederVolts = clamp(kLaunchFeederVolts);
 
-    return Commands.parallel(
-        launcher.runShooterRpsCommand(launcherRps),
-        floorFeeder.feederCommand(floorFeederRps),
-        launchFeeder.feederCommand(launchFeederRps));
+    Command spinUpShooter = Commands.startEnd(
+        () -> launcher.setVoltage(shooterVolts),
+        () -> launcher.setVoltage(0.0),
+        launcher
+    );
+
+    Command runFeeders = Commands.startEnd(
+        () -> {
+          floorFeeder.setVoltage(floorFeederVolts);
+          launchFeeder.setVoltage(launchFeederVolts);
+        },
+        () -> {
+          floorFeeder.setVoltage(0.0);
+          launchFeeder.setVoltage(0.0);
+        },
+        floorFeeder,
+        launchFeeder
+    );
+
+    return spinUpShooter.alongWith(
+        Commands.waitSeconds(kShooterSpinUpSeconds).andThen(runFeeders)
+    );
   }
 
-  private static double clamp(double val, double min, double max) {
-    return Math.max(min, Math.min(max, val));
+  private static double clamp(double volts) {
+    return Math.max(-kMaxVoltage, Math.min(kMaxVoltage, volts));
   }
 }
