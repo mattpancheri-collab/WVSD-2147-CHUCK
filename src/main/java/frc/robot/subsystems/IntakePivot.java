@@ -15,7 +15,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.Constants.IntakePivotConstants;
-import frc.robot.Constants.CANBus;
+import frc.robot.Constants.BusConstants;
+import frc.robot.Constants.CANConstants;
 
 /**
  * Intake Pivot subsystem:
@@ -29,29 +30,47 @@ import frc.robot.Constants.CANBus;
 public class IntakePivot extends SubsystemBase {
 
   // =========================================================================
+  // CONTROL MODE
+  // =========================================================================
+
+  /**
+   * Tracks which control mode the pivot is currently in.
+   * Only ONE mode is active at a time — periodic() dispatches on this
+   * to ensure a single, unambiguous command reaches the motor each loop.
+   */
+  private enum ControlMode {
+    /**
+     * PID position control — setpoint already sent to motor in setAngleDegrees().
+     */
+    POSITION,
+    /** Closed-loop velocity control — periodic() applies the slew-limited RPS. */
+    VELOCITY,
+    /** Open-loop voltage (testing only) — periodic() applies voltageDemand. */
+    VOLTAGE,
+    /** Motor output is zero. */
+    STOPPED
+  }
+
+  // =========================================================================
   // HARDWARE / INTERNALS
   // =========================================================================
 
-  private final TalonFX pivotMotor =
-      new TalonFX(IntakePivotConstants.kPivotID, CANBus.kDefaultBus);
+  private final TalonFX pivotMotor = new TalonFX(CANConstants.kPivotID, BusConstants.kDefaultBus);
 
   // Requests
   private final PositionVoltage positionRequest = new PositionVoltage(0).withSlot(0);
-  private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0); // optional/manual
+  private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
 
-  // Optional slew limiter if you still use velocity mode anywhere
-  private final SlewRateLimiter rpsLimiter =
-      new SlewRateLimiter(IntakePivotConstants.kRampRPSPerSec);
+  private final SlewRateLimiter rpsLimiter = new SlewRateLimiter(IntakePivotConstants.kRampRPSPerSec);
 
   // =========================================================================
   // STATE
   // =========================================================================
 
-  private double targetRps = 0.0;     // only used for optional velocity mode
-  private double targetDeg = IntakePivotConstants.kMinAngleDeg;
+  private ControlMode m_controlMode = ControlMode.STOPPED;
 
-  // Voltage override (testing)
-  private boolean voltageOverride = false;
+  private double targetRps = 0.0;
+  private double targetDeg = IntakePivotConstants.kMinAngleDeg;
   private double voltageDemand = 0.0;
 
   // =========================================================================
@@ -93,51 +112,54 @@ public class IntakePivot extends SubsystemBase {
 
   /** Position mode: move pivot to an angle in degrees and hold it there. */
   public void setAngleDegrees(double deg) {
-    // Exit voltage override when using PID position
-    voltageOverride = false;
-    voltageDemand = 0.0;
-
-    // Stop any velocity intent
     targetRps = 0.0;
     rpsLimiter.reset(0.0);
+    voltageDemand = 0.0;
 
     targetDeg = clamp(deg, IntakePivotConstants.kMinAngleDeg, IntakePivotConstants.kMaxAngleDeg);
 
-    // Phoenix PositionVoltage uses "mechanism rotations" because we set SensorToMechanismRatio.
+    // Phoenix PositionVoltage uses "mechanism rotations" because we set
+    // SensorToMechanismRatio.
     // Mechanism rotations = degrees / 360
     double pivotRotations = targetDeg / 360.0;
     pivotMotor.setControl(positionRequest.withPosition(pivotRotations));
+
+    m_controlMode = ControlMode.POSITION;
   }
 
-  /** Optional: velocity mode (manual). Exits voltage override. */
+  /**
+   * Velocity mode (closed-loop RPS). periodic() applies the slew-limited
+   * setpoint.
+   */
   public void setRps(double rps) {
-    voltageOverride = false;
     voltageDemand = 0.0;
 
-    // FIX: kMaxVelocityRPS is already a double (RPS), so don't call .in(...)
     final double maxRps = IntakePivotConstants.kMaxVelocityRPS;
     targetRps = clamp(rps, -maxRps, maxRps);
+
+    m_controlMode = ControlMode.VELOCITY;
   }
 
-  /** Testing mode: open-loop volts. */
+  /**
+   * Testing mode: open-loop volts. periodic() applies voltageDemand each loop.
+   */
   public void setVoltage(double volts) {
-    voltageOverride = true;
+    targetRps = 0.0;
+    rpsLimiter.reset(0.0);
+
     voltageDemand = clamp(volts, -12.0, 12.0);
 
-    // Clear other intents so nothing “wakes up” later
-    targetRps = 0.0;
-    rpsLimiter.reset(0.0);
+    m_controlMode = ControlMode.VOLTAGE;
   }
 
-  /** Stop pivot output. (Does NOT change the target angle.) */
+  /** Stop all pivot output. */
   public void stop() {
-    voltageOverride = false;
-    voltageDemand = 0.0;
-
     targetRps = 0.0;
     rpsLimiter.reset(0.0);
+    voltageDemand = 0.0;
 
     pivotMotor.setVoltage(0.0);
+    m_controlMode = ControlMode.STOPPED;
   }
 
   // Convenience helpers
@@ -162,7 +184,7 @@ public class IntakePivot extends SubsystemBase {
   }
 
   public boolean isVoltageOverride() {
-    return voltageOverride;
+    return m_controlMode == ControlMode.VOLTAGE;
   }
 
   public double getVoltageDemand() {
@@ -175,26 +197,34 @@ public class IntakePivot extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // Voltage override wins
-    if (voltageOverride) {
-      pivotMotor.setVoltage(voltageDemand);
-      return;
-    }
+    switch (m_controlMode) {
+      case POSITION:
+        // Motor is already holding the position setpoint sent in setAngleDegrees().
+        // Nothing to re-send — the TalonFX holds the last control request
+        // automatically.
+        break;
 
-    // If you're using velocity mode anywhere, keep it alive here.
-    // If you never use setRps(), you can delete this block.
-    if (Math.abs(targetRps) > 1e-6) {
-      double limitedRps = rpsLimiter.calculate(targetRps);
-      pivotMotor.setControl(velocityRequest.withVelocity(limitedRps));
+      case VELOCITY:
+        double limitedRps = rpsLimiter.calculate(targetRps);
+        pivotMotor.setControl(velocityRequest.withVelocity(limitedRps));
+        break;
+
+      case VOLTAGE:
+        pivotMotor.setVoltage(voltageDemand);
+        break;
+
+      case STOPPED:
+      default:
+        // Motor output is already zero (set in stop()).
+        break;
     }
-    // Position mode is commanded directly in setAngleDegrees()
   }
 
   // =========================================================================
   // COMMANDS
   // =========================================================================
 
-  /** While held, deploy to 90°. On release, stow to 0°. */
+  /** While held, deploy to 90 degrees. On release, stow to 0 degrees. */
   public Command deployWhileHeldStowOnReleaseCommand() {
     return Commands.startEnd(this::deploy, this::stow, this);
   }
@@ -215,8 +245,7 @@ public class IntakePivot extends SubsystemBase {
     return Commands.startEnd(
         () -> setVoltage(volts),
         () -> setVoltage(0.0),
-        this
-    );
+        this);
   }
 
   public Command stopCommand() {

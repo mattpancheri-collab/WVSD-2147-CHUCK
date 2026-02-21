@@ -1,7 +1,8 @@
 package frc.robot.subsystems;
 
-import static frc.robot.Constants.CANBus.kDefaultBus;
+import static frc.robot.Constants.BusConstants.kDefaultBus;
 import static frc.robot.Constants.FloorFeederConstants.*;
+import frc.robot.Constants.CANConstants;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -21,7 +22,7 @@ public class FloorFeeder extends SubsystemBase {
   // =========================================================================
   // HARDWARE / INTERNALS
   // =========================================================================
-  private final TalonFX motor = new TalonFX(kFeederID, kDefaultBus);
+  private final TalonFX motor = new TalonFX(CANConstants.kFloorFeederID, kDefaultBus);
 
   // Closed-loop velocity request
   private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
@@ -59,11 +60,10 @@ public class FloorFeeder extends SubsystemBase {
     slot0.kD = kD;
 
     // Feedforward:
-    // If your FloorFeederConstants includes kS/kV/kA you can switch back to those.
-    // Keeping them hardcoded here avoids "cannot find symbol kS/kV/kA" errors.
-    slot0.kS = 0.0;
-    slot0.kV = 0.12;
-    slot0.kA = 0.0;
+    // For tuning, see Constants.java lines 117-119
+    slot0.kS = kS;
+    slot0.kV = kV;
+    slot0.kA = kA;
 
     CurrentLimitsConfigs currentLimits = config.CurrentLimits;
     currentLimits.StatorCurrentLimitEnable = kEnableStatorLimit;
@@ -92,7 +92,9 @@ public class FloorFeeder extends SubsystemBase {
     targetRps = clamp(rps, -kMaxRPS, kMaxRPS);
   }
 
-  /** Voltage mode (testing). Prevents periodic() from running velocity control. */
+  /**
+   * Voltage mode (testing). Prevents periodic() from running velocity control.
+   */
   public void setVoltage(double volts) {
     voltageOverride = true;
     voltageDemand = clamp(volts, -12.0, 12.0);

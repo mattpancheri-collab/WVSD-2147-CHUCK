@@ -14,17 +14,16 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.Constants.IntakeFloorConstants;
-import frc.robot.Constants.CANBus;
+import frc.robot.Constants.BusConstants;
+import frc.robot.Constants.CANConstants;
 
 public class IntakeGround extends SubsystemBase {
 
-  private final TalonFX intakeMotor =
-      new TalonFX(IntakeFloorConstants.kIntakeID, CANBus.kDefaultBus);
+  private final TalonFX intakeMotor = new TalonFX(CANConstants.kIntakeID, BusConstants.kDefaultBus);
 
   private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
 
-  private final SlewRateLimiter rpsLimiter =
-      new SlewRateLimiter(IntakeFloorConstants.kRampRPSPerSec);
+  private final SlewRateLimiter rpsLimiter = new SlewRateLimiter(IntakeFloorConstants.kRampRPSPerSec);
 
   private double targetRps = 0.0;
 

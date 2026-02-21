@@ -11,12 +11,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.Constants.ClimberConstants;
-import frc.robot.Constants.CANBus;
+import frc.robot.Constants.BusConstants;
+import frc.robot.Constants.CANConstants;
 
 public class Climber extends SubsystemBase {
 
-  private final TalonFX motor =
-      new TalonFX(ClimberConstants.kClimberID, CANBus.kDefaultBus);
+  private final TalonFX motor = new TalonFX(CANConstants.kClimberID, BusConstants.kDefaultBus);
 
   public Climber() {
     configureMotor();

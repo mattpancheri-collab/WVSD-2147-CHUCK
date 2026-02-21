@@ -9,6 +9,7 @@ import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
+import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.Matrix;
@@ -23,6 +24,13 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.util.PathPlannerLogging;
+
 import frc.robot.Generated.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -129,6 +137,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+        configurePathPlanner();
     }
 
     /**
@@ -154,6 +163,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+        configurePathPlanner();
     }
 
     /**
@@ -194,6 +204,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+        configurePathPlanner();
     }
 
     /**
@@ -361,5 +372,66 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     @Override
     public Optional<Pose2d> samplePoseAt(double timestampSeconds) {
         return super.samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds));
+    }
+
+    private void configurePathPlanner() {
+        // Logging callback for the active path, viewable in AdvantageScope
+        PathPlannerLogging.setLogActivePathCallback((activePath) -> {
+            SignalLogger.writeStructArray("PathPlanner/activePath", Pose2d.struct, activePath.toArray(new Pose2d[0]));
+        });
+        // Logging callback for the target pose
+        PathPlannerLogging.setLogTargetPoseCallback((targetPose) -> {
+            SignalLogger.writeStruct("PathPlanner/targetPose", Pose2d.struct, targetPose);
+        });
+
+        try {
+            // Load the robot configuration from the GUI settings (robot mass, MOI,
+            // trackwidth, wheelbase).
+            // NOTE: Make sure the values in the PathPlanner GUI match your actual robot
+            // measurements!
+            RobotConfig config = RobotConfig.fromGUISettings();
+
+            AutoBuilder.configure(
+                    () -> this.getState().Pose, // Pose supplier
+                    this::resetPose, // Pose resetter
+                    () -> this.getState().Speeds, // ChassisSpeeds supplier
+                    (speeds, feedforwards) -> setControl(
+                            new SwerveRequest.ApplyRobotSpeeds()
+                                    .withSpeeds(speeds)
+                                    .withDriveRequestType(SwerveModule.DriveRequestType.Velocity)),
+                    new PPHolonomicDriveController(
+                            // -----------------------------------------------------------------------
+                            // PATHPLANNER PID GAINS
+                            // -----------------------------------------------------------------------
+                            // Translation PID handles how accurately the robot stays on the X/Y path.
+                            // Tune the P value first. If it overshoots, decrease P or add D.
+                            new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+
+                            // Rotation PID handles how accurately the robot points in the correct
+                            // direction.
+                            // Tune the P value first. If it spins too far, decrease P or add D.
+                            new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+                    ),
+                    config,
+                    () -> {
+                        // Boolean supplier that controls when the path will be mirrored for the red
+                        // alliance
+                        // This will flip the path being followed to the red side of the field.
+                        // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+                        var alliance = DriverStation.getAlliance();
+                        if (alliance.isPresent()) {
+                            return alliance.get() == DriverStation.Alliance.Red;
+                        }
+                        return false;
+                    },
+                    this // Reference to this subsystem to set requirements
+            );
+        } catch (Exception e) {
+            DriverStation.reportError("Failed to load PathPlanner config: " + e.getMessage(), e.getStackTrace());
+        }
+    }
+
+    public void resetPose(Pose2d pose) {
+        super.resetPose(pose);
     }
 }

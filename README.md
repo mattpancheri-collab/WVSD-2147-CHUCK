@@ -1,67 +1,33 @@
-# 2026 Robot Code - Student Guide
+# 2026 Robot Code
 
-Welcome to the 2026 Robot Code project! This codebase has been structured to make it easy for you to learn, adjust, and program the robot.
+Welcome to the software repository for our 2026 FRC Robot! This repository uses Java, WPILib, standard Phoenix 6 libraries, and PathPlanner to control our custom Swerve Drive and mechanisms.
 
-## 🚀 Getting Started
+To better serve our team, documentation has been split into two distinct guides. Please select the guide most applicable to you:
 
-1.  **Open the Project**: Open this folder in VS Code with the WPILib extension installed.
-2.  **Build the Code**: Open the command palette (Ctrl+Shift+P) and type `WPILib: Build Robot Code`.
+---
 
-## 📂 Project Structure
+## 📘 [Student Guide](Student_Guide.md)
+Are you a student learning how to program the robot? Start here! This guide covers:
+- How to open the project, build, and deploy to the robot.
+- A high-level overview of how the robot's physical parts (subsystems) work.
+- Instructions on where to find CAN IDs, bind controller buttons, and tune mechanism speeds.
 
--   `src/main/java/frc/robot/`
-    -   `subsystems/`: Contains the code for each physical mechanism (Launcher, Intake, Climber, etc.).
-    -   `Constants.java`: The central place for **CAN IDs** and **Controller Ports**.
-    -   `RobotContainer.java`: The central place for **Button Bindings** and connecting subsystems.
+## 📙 [Mentor Guide](Mentor_Guide.md)
+Are you a software mentor guiding students? Read this guide to understand:
+- The architectural philosophy of the codebase (Command-based framework, centralized constants, factories).
+- Common pitfalls students encounter and how the code is structured to help them.
+- Where to find and direct students for advanced Swerve Drive and PathPlanner tuning.
 
-## 🛠️ How to Make Adjustments
+---
 
-We have marked key areas for you to edit with `TODO: STUDENTS` or `STUDENT ADJUSTMENT AREA`.
+## 🔧 Software Requirements
+- [VS Code with WPILib extension](https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-2/wpilib-setup.html)
+- Phoenix Tuner X
+- PathPlanner App
 
-### 1. Changing CAN IDs
-If you change a motor controller on the robot, you need to update its ID here:
--   **File**: `Constants.java`
--   **Look for**: `MechanismIds` class.
-
-### 2. Tuning Speeds & PID
-Each subsystem has configuration constants at the top of its file.
-
-**For Velocity-Controlled Subsystems** (Launcher, Feeders, IntakeFloor):
--   **Files**: `subsystems/LaunchFeeder.java`, `subsystems/FloorFeeder.java`, etc.
--   **Target Speed Constants**: `FEED_IN_RPS`, `IN_RPS`, `kTargetRPM`
--   **PID Constants**: `kP`, `kI`, `kD` (Start with kP, leave kI and kD at 0)
--   **Tuning Tip**: Increase kP until the motor reaches target speed quickly without oscillation
-
-**For Position-Controlled Subsystems** (IntakePivot):
--   **File**: `subsystems/IntakePivot.java`
--   **Position Presets**: `STOW_DEG`, `AMP_DEG`
--   **PID Constants**: `kP`, `kG` (gravity compensation)
--   **Feedforward**: `kV`, `kA` for smooth motion
-
-### 3. Binding Buttons
-To make a button do something (like run the intake), go to the container.
--   **File**: `RobotContainer.java`
--   **Look for**: `configureBindings()` method.
--   **Example**: `operatorJoystick.a().whileTrue(launcher.runLauncherCommand());`
-
-## 🧩 Subsystems Overview
-
-| Subsystem | Description | Control Type |
-| :--- | :--- | :--- |
-| **Launcher** | Dual-motor shooter with velocity PID control | Velocity (RPS) |
-| **LaunchFeeder** | Feeder with CANrange sensor for game piece detection | Velocity (RPS) |
-| **FloorFeeder** | Intake feeder with current limiting and slew rate control | Velocity (RPS) |
-| **IntakePivot** | Position-controlled pivot with gravity compensation | Position (Degrees) |
-| **IntakeFloor** | Floor intake roller with velocity control | Velocity (RPS) |
-| **Climber** | Simple climber with brake mode enabled for safety | Percent Output |
-
-### Advanced Features
-- **PID Control**: Most subsystems use **closed-loop velocity** or **position** control with tunable kP, kI, kD gains
-- **Telemetry Logging**: Subsystems use `@Logged` annotations for automatic data logging via WPILib Epilogue
-- **Simulation Support**: IntakePivot and FloorFeeder include simulation models for testing without hardware
-- **Current Limiting**: All TalonFX motors have stator current limits to prevent brownouts
-
-## 📦 Deployment
-1.  Connect to the robot via USB or Wi-Fi.
-2.  Open Command Palette (Ctrl+Shift+P).
-3.  Run `WPILib: Deploy Robot Code`.
+## 🏗️ Repository Structure
+- `src/main/java/frc/robot/`
+  - `Constants.java`: Central location for all CAN IDs, ports, and tuning offsets.
+  - `RobotContainer.java`: Central location for button bindings and PathPlanner named commands.
+  - `subsystems/`: Code encapsulating physical hardware (Launcher, Intake, Swerve, etc.).
+  - `commands/`: Factories encapsulating complex sequences and auto routines.
