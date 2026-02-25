@@ -26,8 +26,8 @@ public final class IntakeFactory {
 
     // Pivot: deploy while held, stow on release
     Command pivotCmd = Commands.startEnd(
-        () -> intakePivot.setAngleDegrees(90.0),
-        () -> intakePivot.setAngleDegrees(0.0),
+        () -> intakePivot.setAngleDegrees(frc.robot.Constants.IntakePivotConstants.kDeployAngleDeg),
+        () -> intakePivot.setAngleDegrees(frc.robot.Constants.IntakePivotConstants.kMinAngleDeg),
         intakePivot);
 
     // Intake roller
