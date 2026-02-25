@@ -1,7 +1,8 @@
 package frc.robot.subsystems;
 
-import static frc.robot.Constants.CANBus.kDefaultBus;
+import static frc.robot.Constants.BusConstants.kDefaultBus;
 import static frc.robot.Constants.LaunchFeederConstants.*;
+import frc.robot.Constants.CANConstants;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -20,16 +21,15 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class LaunchFeeder extends SubsystemBase {
 
-  private final TalonFX motor = new TalonFX(kFeederID, kDefaultBus);
+  private final TalonFX motor = new TalonFX(CANConstants.kLaunchFeederID, kDefaultBus);
 
   private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
 
   private final SlewRateLimiter rpsLimiter = new SlewRateLimiter(kRampRPSPerSec);
 
-  private final CANrange canrange = kEnableCANrange ? new CANrange(kCANrangeID, kDefaultBus) : null;
+  private final CANrange canrange = kEnableCANrange ? new CANrange(CANConstants.kCANrangeID, kDefaultBus) : null;
 
-  private final Debouncer ballDebouncer =
-      new Debouncer(kBallDebounceSeconds, Debouncer.DebounceType.kRising);
+  private final Debouncer ballDebouncer = new Debouncer(kBallDebounceSeconds, Debouncer.DebounceType.kRising);
 
   private double targetRps = 0.0;
 
@@ -70,12 +70,14 @@ public class LaunchFeeder extends SubsystemBase {
 
   // SENSOR (CANrange)
   public double getDistanceMeters() {
-    if (canrange == null) return Double.NaN;
+    if (canrange == null)
+      return Double.NaN;
     return canrange.getDistance().getValueAsDouble();
   }
 
   public boolean hasBall() {
-    if (canrange == null) return false;
+    if (canrange == null)
+      return false;
 
     double d = getDistanceMeters();
     boolean raw = d > 0.0 && d < kBallDetectionDistanceMeters;
@@ -121,12 +123,29 @@ public class LaunchFeeder extends SubsystemBase {
   }
 
   // SIMPLE GETTERS
-  public double getTargetRps() { return targetRps; }
-  public double getVelocityRps() { return motor.getVelocity().getValueAsDouble(); }
-  public double getAppliedVolts() { return motor.getMotorVoltage().getValueAsDouble(); }
-  public double getStatorCurrentA() { return motor.getStatorCurrent().getValueAsDouble(); }
-  public boolean isVoltageOverride() { return voltageOverride; }
-  public double getVoltageDemand() { return voltageDemand; }
+  public double getTargetRps() {
+    return targetRps;
+  }
+
+  public double getVelocityRps() {
+    return motor.getVelocity().getValueAsDouble();
+  }
+
+  public double getAppliedVolts() {
+    return motor.getMotorVoltage().getValueAsDouble();
+  }
+
+  public double getStatorCurrentA() {
+    return motor.getStatorCurrent().getValueAsDouble();
+  }
+
+  public boolean isVoltageOverride() {
+    return voltageOverride;
+  }
+
+  public double getVoltageDemand() {
+    return voltageDemand;
+  }
 
   @Override
   public void periodic() {
@@ -145,10 +164,10 @@ public class LaunchFeeder extends SubsystemBase {
             + " applied=" + motor.getMotorVoltage().getValueAsDouble()
             + " current=" + motor.getStatorCurrent().getValueAsDouble());
 
-            System.out.println("[LaunchFeeder] enabled=" + edu.wpi.first.wpilibj.DriverStation.isEnabled()
+        System.out.println("[LaunchFeeder] enabled=" + edu.wpi.first.wpilibj.DriverStation.isEnabled()
             + " brownout=" + edu.wpi.first.wpilibj.RobotController.isBrownedOut()
             + " batt=" + edu.wpi.first.wpilibj.RobotController.getBatteryVoltage());
-        
+
       }
       return;
     }
@@ -162,8 +181,13 @@ public class LaunchFeeder extends SubsystemBase {
     return Commands.startEnd(this::feederIn, this::stop, this).until(this::hasBall);
   }
 
-  public Command feederInCommand() { return feederCommand(kFeedInRPS); }
-  public Command feederOutCommand() { return feederCommand(kFeedOutRPS); }
+  public Command feederInCommand() {
+    return feederCommand(kFeedInRPS);
+  }
+
+  public Command feederOutCommand() {
+    return feederCommand(kFeedOutRPS);
+  }
 
   public Command feederCommand(double rps) {
     return Commands.startEnd(() -> setRps(rps), this::stop, this);

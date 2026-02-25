@@ -11,7 +11,8 @@ import frc.robot.subsystems.LaunchFeeder;
 import static frc.robot.Constants.TestingConstants.*;
 
 public final class IntakeFactory {
-  private IntakeFactory() {}
+  private IntakeFactory() {
+  }
 
   public static Command deployAndIntakeChainVoltage(
       IntakePivot intakePivot,
@@ -19,38 +20,33 @@ public final class IntakeFactory {
       FloorFeeder floorFeeder,
       LaunchFeeder launchFeeder) {
 
-    final double pivotVolts  = clampVolts(kTestVoltsIntakePivot);
     final double intakeVolts = clampVolts(kTestVoltsIntakeGround);
-    final double floorVolts  = clampVolts(kTestVoltsFloorFeeder);
+    final double floorVolts = clampVolts(kTestVoltsFloorFeeder);
     final double launchVolts = clampVolts(kTestVoltsLaunchFeeder);
 
     // Pivot: deploy while held, stow on release
     Command pivotCmd = Commands.startEnd(
         () -> intakePivot.setAngleDegrees(90.0),
         () -> intakePivot.setAngleDegrees(0.0),
-        intakePivot
-    );
+        intakePivot);
 
     // Intake roller
     Command intakeCmd = Commands.startEnd(
         () -> intakeGround.setVoltage(+intakeVolts),
         () -> intakeGround.setVoltage(0.0),
-        intakeGround
-    );
+        intakeGround);
 
     // Floor feeder
     Command floorCmd = Commands.startEnd(
         () -> floorFeeder.setVoltage(+floorVolts),
         () -> floorFeeder.setVoltage(0.0),
-        floorFeeder
-    );
+        floorFeeder);
 
     // Launch feeder
     Command launchCmd = Commands.startEnd(
         () -> launchFeeder.setVoltage(+launchVolts),
         () -> launchFeeder.setVoltage(0.0),
-        launchFeeder
-    );
+        launchFeeder);
 
     // Parallel group already stops on end because each is startEnd.
     // (No finallyDo needed, so this works across WPILib versions.)
@@ -86,15 +82,13 @@ public final class IntakeFactory {
             launchFeeder.setRps(launchRps);
           }
         },
-        launchFeeder
-    ).finallyDo(i -> launchFeeder.stop()); // <-- if this errors, tell me and I'll swap it too
+        launchFeeder).finallyDo(i -> launchFeeder.stop()); // <-- if this errors, tell me and I'll swap it too
 
     return Commands.parallel(
         intakePivot.setAngleCommand(deployDeg),
         intakeGround.intakeCommand(intakeRps),
         floorFeeder.feederCommand(floorRps),
-        launchFeederAutoStop
-    ).andThen(intakePivot.setAngleCommand(stowDeg));
+        launchFeederAutoStop).andThen(intakePivot.setAngleCommand(stowDeg));
   }
 
   private static double clamp(double val, double min, double max) {

@@ -16,9 +16,6 @@
                 "showReuseMessage": false,
                 "clear": true
             },
-            "runOptions": {
-                "runOn": "folderOpen"
-            },
             "problemMatcher": []
         }
     ]

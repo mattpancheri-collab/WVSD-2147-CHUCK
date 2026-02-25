@@ -1,8 +1,9 @@
 package frc.robot.subsystems;
 
-import static frc.robot.Constants.CANBus.kDefaultBus;
+import static frc.robot.Constants.BusConstants.kDefaultBus;
 import static frc.robot.Constants.LauncherConstants.*;
 import static frc.robot.Constants.ShootingConstants.kShooterPolarity;
+import frc.robot.Constants.CANConstants;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -24,32 +25,34 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Launcher extends SubsystemBase {
 
   // Shooter motors
-  private final TalonFX shooterLeader = new TalonFX(kShooterLeaderID, kDefaultBus);
-  private final TalonFX shooterFollower1 = new TalonFX(kShooterFollower1ID, kDefaultBus);
-  private final TalonFX shooterFollower2 = new TalonFX(kShooterFollower2ID, kDefaultBus);
+  private final TalonFX shooterLeader = new TalonFX(CANConstants.kShooterLeaderID, kDefaultBus);
+  private final TalonFX shooterFollower1 = new TalonFX(CANConstants.kShooterFollower1ID, kDefaultBus);
+  private final TalonFX shooterFollower2 = new TalonFX(CANConstants.kShooterFollower2ID, kDefaultBus);
 
   // Hood motor
-  private final TalonFX hoodMotor = new TalonFX(kHoodID, kDefaultBus);
+  private final TalonFX hoodMotor = new TalonFX(CANConstants.kHoodID, kDefaultBus);
+
+  private enum ControlMode {
+    VELOCITY,
+    VOLTAGE,
+    STOPPED
+  }
+
+  private ControlMode m_controlMode = ControlMode.STOPPED;
 
   // Requests
   private final VelocityVoltage shooterLeaderRequest = new VelocityVoltage(0).withSlot(0);
   private final PositionVoltage hoodPositionRequest = new PositionVoltage(0).withSlot(0);
 
-  private final Follower follower1Request =
-      new Follower(kShooterLeaderID, MotorAlignmentValue.Aligned);
+  private final Follower follower1Request = new Follower(CANConstants.kShooterLeaderID, MotorAlignmentValue.Aligned);
 
-  private final Follower follower2Request =
-      new Follower(kShooterLeaderID, MotorAlignmentValue.Opposed);
+  private final Follower follower2Request = new Follower(CANConstants.kShooterLeaderID, MotorAlignmentValue.Opposed);
 
-  private final SlewRateLimiter shooterSetpointLimiter =
-      new SlewRateLimiter(kShooterRampRPSPerSec);
+  private final SlewRateLimiter shooterSetpointLimiter = new SlewRateLimiter(kShooterRampRPSPerSec);
 
-  // Velocity-mode targets
+  // State targets
   private double shooterTargetRps = 0.0;
   private double hoodTargetDeg = kHoodMinDeg;
-
-  // Voltage override (testing)
-  private boolean shooterVoltageOverride = false;
   private double shooterVoltageDemand = 0.0;
 
   public Launcher() {
@@ -133,7 +136,6 @@ public class Launcher extends SubsystemBase {
 
   /** Velocity mode (exits voltage override). */
   public void setShooterRps(double rps) {
-    shooterVoltageOverride = false;
     shooterVoltageDemand = 0.0;
 
     // Apply polarity here so ALL setpoints match the same "forward"
@@ -141,17 +143,19 @@ public class Launcher extends SubsystemBase {
 
     // Clamp to [0..max] because your shooter API expects "positive is shoot"
     shooterTargetRps = clamp(signedRps, 0.0, kShooterMaxRPS);
+
+    m_controlMode = ControlMode.VELOCITY;
   }
 
   /** Testing mode: open-loop volts on shooter (leader + both followers). */
   public void setVoltage(double volts) {
-    shooterVoltageOverride = true;
+    shooterTargetRps = 0.0;
+    shooterSetpointLimiter.reset(0.0);
 
     // Apply polarity once, globally
     shooterVoltageDemand = clamp(kShooterPolarity * volts, -12.0, 12.0);
 
-    shooterTargetRps = 0.0;
-    shooterSetpointLimiter.reset(0.0);
+    m_controlMode = ControlMode.VOLTAGE;
   }
 
   public void setHoodDegrees(double deg) {
@@ -159,15 +163,15 @@ public class Launcher extends SubsystemBase {
   }
 
   public void stop() {
-    shooterVoltageOverride = false;
     shooterVoltageDemand = 0.0;
-
     shooterTargetRps = 0.0;
     shooterSetpointLimiter.reset(0.0);
 
     shooterLeader.setVoltage(0.0);
     shooterFollower1.setVoltage(0.0);
     shooterFollower2.setVoltage(0.0);
+
+    m_controlMode = ControlMode.STOPPED;
   }
 
   public void idleShooter() {
@@ -214,13 +218,22 @@ public class Launcher extends SubsystemBase {
     shooterFollower1.setControl(follower1Request);
     shooterFollower2.setControl(follower2Request);
 
-    if (shooterVoltageOverride) {
-      shooterLeader.setVoltage(shooterVoltageDemand);
-      shooterFollower1.setVoltage(shooterVoltageDemand);
-      shooterFollower2.setVoltage(shooterVoltageDemand);
-    } else {
-      double limitedRps = shooterSetpointLimiter.calculate(shooterTargetRps);
-      shooterLeader.setControl(shooterLeaderRequest.withVelocity(limitedRps));
+    switch (m_controlMode) {
+      case VELOCITY:
+        double limitedRps = shooterSetpointLimiter.calculate(shooterTargetRps);
+        shooterLeader.setControl(shooterLeaderRequest.withVelocity(limitedRps));
+        break;
+
+      case VOLTAGE:
+        shooterLeader.setVoltage(shooterVoltageDemand);
+        shooterFollower1.setVoltage(shooterVoltageDemand);
+        shooterFollower2.setVoltage(shooterVoltageDemand);
+        break;
+
+      case STOPPED:
+      default:
+        // Already handled by stop() calls or startup
+        break;
     }
 
     // hood always position-controlled
@@ -252,16 +265,14 @@ public class Launcher extends SubsystemBase {
     return Commands.startEnd(
         () -> setShooterRps(rps),
         () -> setShooterRps(0.0),
-        this
-    );
+        this);
   }
 
   public Command runShooterVoltageCommand(double volts) {
     return Commands.startEnd(
         () -> setVoltage(volts),
         () -> setVoltage(0.0),
-        this
-    );
+        this);
   }
 
   // ---------------------------------------------------------------------------
