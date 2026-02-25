@@ -78,7 +78,7 @@ public class Launcher extends SubsystemBase {
     cfg.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
     // You verified in Phoenix Tuner that CW+ with +voltage is "correct".
-    cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    cfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
     Slot0Configs s0 = cfg.Slot0;
     s0.kP = kShooterP;
