@@ -129,14 +129,14 @@ public class RobotContainer {
                 // =========================================================================
                 drivetrain.setDefaultCommand(
                                 drivetrain.applyRequest(() -> drive
-                                                .withVelocityX(driverJoystick.getLeftY() * MaxSpeed)
+                                                .withVelocityX(-driverJoystick.getLeftY() * MaxSpeed)
                                                 .withVelocityY(-driverJoystick.getLeftX() * MaxSpeed)
                                                 .withRotationalRate(-driverJoystick.getRightX() * MaxAngularRate)));
 
                 // Right Bumper: Slow Driving Mode
                 driverJoystick.rightBumper().whileTrue(
                                 drivetrain.applyRequest(() -> slowDrive
-                                                .withVelocityX(driverJoystick.getLeftY() * SlowMaxSpeed)
+                                                .withVelocityX(-driverJoystick.getLeftY() * SlowMaxSpeed)
                                                 .withVelocityY(-driverJoystick.getLeftX() * SlowMaxSpeed)
                                                 .withRotationalRate(-driverJoystick.getRightX() * SlowMaxAngularRate)));
 
@@ -147,8 +147,8 @@ public class RobotContainer {
                 driverJoystick.rightTrigger().whileTrue(
                                 LauncherFactory.shootFeedVoltage(launcher, floorFeeder, launchFeeder));
 
-                // A Button: Gyro Reset
-                driverJoystick.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+                // A Button: Gyro Reset (Seed to 180 if needed to fix inversion)
+                driverJoystick.a().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
                 // Placeholders (Mapped to Print commands so they don't do nothing and can be
                 // identified easily)

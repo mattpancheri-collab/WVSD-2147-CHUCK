@@ -201,9 +201,9 @@ public class IntakePivot extends SubsystemBase {
   public void periodic() {
     switch (m_controlMode) {
       case POSITION:
-        // Motor is already holding the position setpoint sent in setAngleDegrees().
-        // Nothing to re-send — the TalonFX holds the last control request
-        // automatically.
+        // Re-apply position request in every loop to ensure robustness.
+        double pivotRotations = targetDeg / 360.0;
+        pivotMotor.setControl(positionRequest.withPosition(pivotRotations));
         break;
 
       case VELOCITY:
