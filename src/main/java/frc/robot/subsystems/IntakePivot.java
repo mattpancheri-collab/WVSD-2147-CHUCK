@@ -92,7 +92,7 @@ public class IntakePivot extends SubsystemBase {
     config.Feedback.SensorToMechanismRatio = IntakePivotConstants.kGearRatio;
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
     // Slot 0 PID for POSITION control
     Slot0Configs slot0 = config.Slot0;
@@ -118,7 +118,7 @@ public class IntakePivot extends SubsystemBase {
     rpsLimiter.reset(0.0);
     voltageDemand = 0.0;
 
-    targetDeg = MathUtil.clamp(deg, IntakePivotConstants.kIntakeAngleDeg, IntakePivotConstants.kIdleAngleDeg);
+    targetDeg = MathUtil.clamp(deg, 0.0, 90.0);
 
     // Phoenix PositionVoltage uses "mechanism rotations" because we set
     // SensorToMechanismRatio.

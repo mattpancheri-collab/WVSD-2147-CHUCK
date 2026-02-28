@@ -107,8 +107,8 @@ public final class Constants {
 
     public static final double kGearRatio = 100.0;
 
-    public static final double kIntakeAngleDeg = 0.0;
-    public static final double kIdleAngleDeg = 90.0;
+    public static final double kIntakeAngleDeg = 90.0;
+    public static final double kIdleAngleDeg = 0.0;
 
     /* --- PID TUNING: Controls the Arm Movement --- */
     /**
@@ -313,7 +313,7 @@ public final class Constants {
     public static final double kHoodFarDeg = 45.0;
 
     // Custom Button Mappings (B, X, Y)
-    public static final double kHoodAngle1 = 10.0;
+    public static final double kHoodAngle1 = 38.0;
     public static final double kHoodAngle2 = 30.0;
     public static final double kHoodAngle3 = 45.0;
   }
