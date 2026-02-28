@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.MathUtil;
+
 import static frc.robot.Constants.BusConstants.kDefaultBus;
 import static frc.robot.Constants.FloorFeederConstants.*;
 import frc.robot.Constants.CANConstants;
@@ -89,7 +91,7 @@ public class FloorFeeder extends SubsystemBase {
     voltageOverride = false;
     voltageDemand = 0.0;
 
-    targetRps = clamp(rps, -kMaxRPS, kMaxRPS);
+    targetRps = MathUtil.clamp(rps, -kMaxRPS, kMaxRPS);
   }
 
   /**
@@ -97,7 +99,7 @@ public class FloorFeeder extends SubsystemBase {
    */
   public void setVoltage(double volts) {
     voltageOverride = true;
-    voltageDemand = clamp(volts, -12.0, 12.0);
+    voltageDemand = MathUtil.clamp(volts, -12.0, 12.0);
 
     targetRps = 0.0;
     rpsLimiter.reset(0.0);
@@ -175,10 +177,4 @@ public class FloorFeeder extends SubsystemBase {
     return runOnce(this::stop);
   }
 
-  // =========================================================================
-  // UTIL
-  // =========================================================================
-  private static double clamp(double val, double min, double max) {
-    return Math.max(min, Math.min(max, val));
-  }
 }

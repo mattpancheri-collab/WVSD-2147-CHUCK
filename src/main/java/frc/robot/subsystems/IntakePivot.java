@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.MathUtil;
+
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -20,7 +22,7 @@ import frc.robot.Constants.CANConstants;
 
 /**
  * Intake Pivot subsystem:
- * - POSITION control for angles (0 deg = stow, 90 deg = deploy).
+ * - POSITION control for angles (0 deg = intake, 90 deg = idle).
  * - Voltage override mode for testing controller (open-loop volts).
  *
  * Notes:
@@ -70,7 +72,7 @@ public class IntakePivot extends SubsystemBase {
   private ControlMode m_controlMode = ControlMode.STOPPED;
 
   private double targetRps = 0.0;
-  private double targetDeg = IntakePivotConstants.kMinAngleDeg;
+  private double targetDeg = IntakePivotConstants.kIdleAngleDeg;
   private double voltageDemand = 0.0;
 
   // =========================================================================
@@ -79,8 +81,8 @@ public class IntakePivot extends SubsystemBase {
 
   public IntakePivot() {
     configureMotor();
-    // start stowed
-    setAngleDegrees(IntakePivotConstants.kMinAngleDeg);
+    // start at idle (90 deg)
+    setAngleDegrees(IntakePivotConstants.kIdleAngleDeg);
   }
 
   private void configureMotor() {
@@ -116,7 +118,7 @@ public class IntakePivot extends SubsystemBase {
     rpsLimiter.reset(0.0);
     voltageDemand = 0.0;
 
-    targetDeg = clamp(deg, IntakePivotConstants.kMinAngleDeg, IntakePivotConstants.kMaxAngleDeg);
+    targetDeg = MathUtil.clamp(deg, IntakePivotConstants.kIntakeAngleDeg, IntakePivotConstants.kIdleAngleDeg);
 
     // Phoenix PositionVoltage uses "mechanism rotations" because we set
     // SensorToMechanismRatio.
@@ -135,7 +137,7 @@ public class IntakePivot extends SubsystemBase {
     voltageDemand = 0.0;
 
     final double maxRps = IntakePivotConstants.kMaxVelocityRPS;
-    targetRps = clamp(rps, -maxRps, maxRps);
+    targetRps = MathUtil.clamp(rps, -maxRps, maxRps);
 
     m_controlMode = ControlMode.VELOCITY;
   }
@@ -147,7 +149,7 @@ public class IntakePivot extends SubsystemBase {
     targetRps = 0.0;
     rpsLimiter.reset(0.0);
 
-    voltageDemand = clamp(volts, -12.0, 12.0);
+    voltageDemand = MathUtil.clamp(volts, -12.0, 12.0);
 
     m_controlMode = ControlMode.VOLTAGE;
   }
@@ -164,11 +166,11 @@ public class IntakePivot extends SubsystemBase {
 
   // Convenience helpers
   public void deploy() {
-    setAngleDegrees(IntakePivotConstants.kDeployAngleDeg);
+    setAngleDegrees(IntakePivotConstants.kIntakeAngleDeg);
   }
 
   public void stow() {
-    setAngleDegrees(IntakePivotConstants.kMinAngleDeg);
+    setAngleDegrees(IntakePivotConstants.kIdleAngleDeg);
   }
 
   // =========================================================================
@@ -250,13 +252,5 @@ public class IntakePivot extends SubsystemBase {
 
   public Command stopCommand() {
     return runOnce(this::stop);
-  }
-
-  // =========================================================================
-  // UTIL
-  // =========================================================================
-
-  private static double clamp(double val, double min, double max) {
-    return Math.max(min, Math.min(max, val));
   }
 }

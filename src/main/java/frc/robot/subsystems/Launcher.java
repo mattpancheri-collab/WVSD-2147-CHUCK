@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.MathUtil;
+
 import static frc.robot.Constants.BusConstants.kDefaultBus;
 import static frc.robot.Constants.LauncherConstants.*;
 import static frc.robot.Constants.ShootingConstants.kShooterPolarity;
@@ -142,7 +144,7 @@ public class Launcher extends SubsystemBase {
     double signedRps = kShooterPolarity * rps;
 
     // Clamp to [0..max] because your shooter API expects "positive is shoot"
-    shooterTargetRps = clamp(signedRps, 0.0, kShooterMaxRPS);
+    shooterTargetRps = MathUtil.clamp(signedRps, 0.0, kShooterMaxRPS);
 
     m_controlMode = ControlMode.VELOCITY;
   }
@@ -153,13 +155,13 @@ public class Launcher extends SubsystemBase {
     shooterSetpointLimiter.reset(0.0);
 
     // Apply polarity once, globally
-    shooterVoltageDemand = clamp(kShooterPolarity * volts, -12.0, 12.0);
+    shooterVoltageDemand = MathUtil.clamp(kShooterPolarity * volts, -12.0, 12.0);
 
     m_controlMode = ControlMode.VOLTAGE;
   }
 
   public void setHoodDegrees(double deg) {
-    hoodTargetDeg = clamp(deg, kHoodMinDeg, kHoodMaxDeg);
+    hoodTargetDeg = MathUtil.clamp(deg, kHoodMinDeg, kHoodMaxDeg);
   }
 
   public void stop() {
@@ -279,7 +281,4 @@ public class Launcher extends SubsystemBase {
   // Util
   // ---------------------------------------------------------------------------
 
-  private static double clamp(double val, double min, double max) {
-    return Math.max(min, Math.min(max, val));
-  }
 }

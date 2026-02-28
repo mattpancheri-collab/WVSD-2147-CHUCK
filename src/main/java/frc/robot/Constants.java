@@ -5,6 +5,17 @@ public final class Constants {
   }
 
   // ===========================================================================
+  // GLOBAL TUNING
+  // ===========================================================================
+  public static final class GlobalConstants {
+    private GlobalConstants() {
+    }
+
+    public static final double kDefaultVoltage = 11.0;
+    public static final double kDefaultRampRate = 200.0;
+  }
+
+  // ===========================================================================
   // LAUNCHER FACTORY
   // ===========================================================================
   public static final class ShootingConstants {
@@ -18,9 +29,9 @@ public final class Constants {
     public static final double kShooterPolarity = -1.0;
 
     // Voltages (100% = 12V)
-    public static final double kShooterVolts = 11.0;
-    public static final double kFloorFeederVolts = 11.0;
-    public static final double kLaunchFeederVolts = 11.0;
+    public static final double kShooterVolts = GlobalConstants.kDefaultVoltage;
+    public static final double kFloorFeederVolts = GlobalConstants.kDefaultVoltage;
+    public static final double kLaunchFeederVolts = GlobalConstants.kDefaultVoltage;
 
     // Delay before feeders start (seconds)
     public static final double kShooterSpinUpSeconds = 3.0;
@@ -34,11 +45,11 @@ public final class Constants {
     }
 
     // 100% = 12V
-    public static final double kTestVoltsShooter = 11.0;
-    public static final double kTestVoltsFloorFeeder = 11.0;
-    public static final double kTestVoltsLaunchFeeder = 11.0;
-    public static final double kTestVoltsIntakeGround = 11.0;
-    public static final double kTestVoltsIntakePivot = 11.0;
+    public static final double kTestVoltsShooter = GlobalConstants.kDefaultVoltage;
+    public static final double kTestVoltsFloorFeeder = GlobalConstants.kDefaultVoltage;
+    public static final double kTestVoltsLaunchFeeder = GlobalConstants.kDefaultVoltage;
+    public static final double kTestVoltsIntakeGround = GlobalConstants.kDefaultVoltage;
+    public static final double kTestVoltsIntakePivot = GlobalConstants.kDefaultVoltage;
   }
 
   // ===========================================================================
@@ -96,9 +107,8 @@ public final class Constants {
 
     public static final double kGearRatio = 100.0;
 
-    public static final double kMinAngleDeg = 0.0;
-    public static final double kMaxAngleDeg = 90.0;
-    public static final double kDeployAngleDeg = 90.0;
+    public static final double kIntakeAngleDeg = 0.0;
+    public static final double kIdleAngleDeg = 90.0;
 
     /* --- PID TUNING: Controls the Arm Movement --- */
     /**
@@ -131,6 +141,7 @@ public final class Constants {
     }
 
     // CAN ID is now in CANConstants.kIntakeID
+    public static final double kIntakeVolts = GlobalConstants.kDefaultVoltage;
 
     /* --- SPEED TUNING: Controls the Roller Speed --- */
     /**
@@ -147,7 +158,7 @@ public final class Constants {
     public static final double kIntakeInRPS = 25.0;
     public static final double kIntakeOutRPS = -25.0;
 
-    public static final double kRampRPSPerSec = 200.0;
+    public static final double kRampRPSPerSec = GlobalConstants.kDefaultRampRate;
 
     public static final boolean kEnableStatorLimit = true;
     public static final double kStatorLimitAmps = 40.0;
@@ -161,6 +172,7 @@ public final class Constants {
     }
 
     // CAN ID is now in CANConstants.kFloorFeederID
+    public static final double kIntakeVolts = GlobalConstants.kDefaultVoltage;
 
     /* --- PID & FEEDFORWARD TUNING: Controls Feed Speed --- */
     /** Proportional Gain: Main correction power to stay at target speed. */
@@ -184,7 +196,7 @@ public final class Constants {
     public static final double kFeedInRPS = 25.0;
     public static final double kFeedOutRPS = -25.0;
 
-    public static final double kRampRPSPerSec = 200.0;
+    public static final double kRampRPSPerSec = GlobalConstants.kDefaultRampRate;
 
     public static final boolean kEnableStatorLimit = true;
     public static final double kStatorLimitAmps = 40.0;
@@ -198,6 +210,7 @@ public final class Constants {
     }
 
     // CAN IDs are now in CANConstants.kLaunchFeederID / CANConstants.kCANrangeID
+    public static final double kIntakeVolts = GlobalConstants.kDefaultVoltage;
 
     public static final boolean kEnableCANrange = false;
 
@@ -226,7 +239,7 @@ public final class Constants {
     public static final double kFeedInRPS = 25.0;
     public static final double kFeedOutRPS = -25.0;
 
-    public static final double kRampRPSPerSec = 200.0;
+    public static final double kRampRPSPerSec = GlobalConstants.kDefaultRampRate;
 
     public static final boolean kEnableStatorLimit = true;
     public static final double kStatorLimitAmps = 40.0;
@@ -264,7 +277,7 @@ public final class Constants {
     public static final double kShooterStatorLimitAmps = 60.0;
 
     public static final double kShooterMaxRPS = 80.0;
-    public static final double kShooterRampRPSPerSec = 200.0;
+    public static final double kShooterRampRPSPerSec = GlobalConstants.kDefaultRampRate;
 
     public static final double kShooterIdleRPS = 10.0;
     public static final double kShooterCloseRPS = 55.0;

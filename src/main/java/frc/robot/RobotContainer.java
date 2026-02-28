@@ -1,7 +1,6 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
-import static frc.robot.Constants.TestingConstants.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -104,17 +103,13 @@ public class RobotContainer {
                                 LauncherFactory.shootFeedVoltage(launcher, floorFeeder, launchFeeder));
 
                 NamedCommands.registerCommand("Stow",
-                                intakePivot.runOnce(() -> intakePivot.setAngleDegrees(0.0)));
+                                intakePivot.runOnce(() -> intakePivot
+                                                .setAngleDegrees(Constants.IntakePivotConstants.kIdleAngleDeg)));
         }
 
         // ---------------------------------------------------------------------------
         // HELPERS
         // ---------------------------------------------------------------------------
-
-        /** Clamp test voltages to safe motor range */
-        private static double clamp(double volts) {
-                return MathUtil.clamp(volts, -12.0, 12.0);
-        }
 
         /** Simple helper for voltage-hold buttons */
         private static Command holdVolts(
@@ -142,8 +137,8 @@ public class RobotContainer {
                                                 .withVelocityY(-driverJoystick.getLeftX() * SlowMaxSpeed)
                                                 .withRotationalRate(-driverJoystick.getRightX() * SlowMaxAngularRate)));
 
-                // Triggers: Factory Commands
-                driverJoystick.leftTrigger().whileTrue(
+                // Triggers and Bumpers: Factory Commands
+                driverJoystick.leftBumper().whileTrue(
                                 IntakeFactory.deployAndIntakeChainVoltage(intakePivot, intakeGround, floorFeeder,
                                                 launchFeeder));
                 driverJoystick.rightTrigger().whileTrue(
@@ -154,7 +149,7 @@ public class RobotContainer {
 
                 // Placeholders (Mapped to Print commands so they don't do nothing and can be
                 // identified easily)
-                driverJoystick.leftBumper().onTrue(Commands.print("Placeholder: Left Bumper"));
+                driverJoystick.leftTrigger().onTrue(Commands.print("Placeholder: Left Trigger"));
                 driverJoystick.b().onTrue(Commands.print("Placeholder: B Button"));
                 driverJoystick.x().onTrue(Commands.print("Placeholder: X Button"));
                 driverJoystick.y().onTrue(Commands.print("Placeholder: Y Button"));
@@ -175,68 +170,67 @@ public class RobotContainer {
                 operatorJoystick.b().whileTrue(intakeGround.intakeOutCommand());
 
                 operatorJoystick.y().onTrue(intakePivot.runOnce(
-                                () -> intakePivot.setAngleDegrees(90.0)));
+                                () -> intakePivot.setAngleDegrees(Constants.IntakePivotConstants.kIdleAngleDeg)));
                 operatorJoystick.a().onTrue(intakePivot.runOnce(
-                                () -> intakePivot.setAngleDegrees(0.0)));
-
-                // =========================================================================
-                // TESTING JOYSTICK (VOLTAGE ONLY)
-                // =========================================================================
-
-                final double SHOOTER_VOLTS = clamp(kTestVoltsShooter);
-                final double FLOOR_FEEDER_VOLTS = clamp(kTestVoltsFloorFeeder);
-                final double LAUNCH_FEEDER_VOLTS = clamp(kTestVoltsLaunchFeeder);
-                final double INTAKE_GROUND_VOLTS = clamp(kTestVoltsIntakeGround);
-                final double PIVOT_VOLTS = clamp(kTestVoltsIntakePivot);
+                                () -> intakePivot.setAngleDegrees(Constants.IntakePivotConstants.kIntakeAngleDeg)));
 
                 // IntakeGround
                 testingJoystick.povLeft().whileTrue(
                                 holdVolts(intakeGround,
-                                                () -> intakeGround.setVoltage(+INTAKE_GROUND_VOLTS),
+                                                () -> intakeGround.setVoltage(
+                                                                +Constants.IntakeFloorConstants.kIntakeVolts),
                                                 () -> intakeGround.setVoltage(0.0)));
 
                 testingJoystick.povRight().whileTrue(
                                 holdVolts(intakeGround,
-                                                () -> intakeGround.setVoltage(-INTAKE_GROUND_VOLTS),
+                                                () -> intakeGround.setVoltage(
+                                                                -Constants.IntakeFloorConstants.kIntakeVolts),
                                                 () -> intakeGround.setVoltage(0.0)));
 
                 // IntakePivot
                 testingJoystick.povUp().whileTrue(
                                 holdVolts(intakePivot,
-                                                () -> intakePivot.setVoltage(+PIVOT_VOLTS),
+                                                () -> intakePivot.setVoltage(
+                                                                +Constants.TestingConstants.kTestVoltsIntakePivot),
                                                 () -> intakePivot.setVoltage(0.0)));
 
                 testingJoystick.povDown().whileTrue(
                                 holdVolts(intakePivot,
-                                                () -> intakePivot.setVoltage(-PIVOT_VOLTS),
+                                                () -> intakePivot.setVoltage(
+                                                                -Constants.TestingConstants.kTestVoltsIntakePivot),
                                                 () -> intakePivot.setVoltage(0.0)));
 
                 // FloorFeeder
                 testingJoystick.leftTrigger(0.1).whileTrue(
                                 holdVolts(floorFeeder,
-                                                () -> floorFeeder.setVoltage(+FLOOR_FEEDER_VOLTS),
+                                                () -> floorFeeder.setVoltage(
+                                                                +Constants.FloorFeederConstants.kIntakeVolts),
                                                 () -> floorFeeder.setVoltage(0.0)));
 
                 testingJoystick.rightTrigger(0.1).whileTrue(
                                 holdVolts(floorFeeder,
-                                                () -> floorFeeder.setVoltage(-FLOOR_FEEDER_VOLTS),
+                                                () -> floorFeeder.setVoltage(
+                                                                -Constants.FloorFeederConstants.kIntakeVolts),
                                                 () -> floorFeeder.setVoltage(0.0)));
 
                 // LaunchFeeder
                 testingJoystick.a().whileTrue(
                                 holdVolts(launchFeeder,
-                                                () -> launchFeeder.setVoltage(LAUNCH_FEEDER_VOLTS),
+                                                () -> launchFeeder.setVoltage(
+                                                                Constants.LaunchFeederConstants.kIntakeVolts),
                                                 () -> launchFeeder.setVoltage(0.0)));
 
                 testingJoystick.y().whileTrue(
                                 holdVolts(launchFeeder,
-                                                () -> launchFeeder.setVoltage(-LAUNCH_FEEDER_VOLTS),
+                                                () -> launchFeeder.setVoltage(
+                                                                -Constants.LaunchFeederConstants.kIntakeVolts),
                                                 () -> launchFeeder.setVoltage(0.0)));
 
                 // Launcher
                 testingJoystick.b().whileTrue(
                                 holdVolts(launcher,
-                                                () -> launcher.setVoltage(SHOOTER_VOLTS),
+                                                () -> launcher.setVoltage(MathUtil.clamp(
+                                                                Constants.TestingConstants.kTestVoltsShooter, -12, 12)),
                                                 () -> launcher.setVoltage(0.0)));
 
                 // =========================================================================

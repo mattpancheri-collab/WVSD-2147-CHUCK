@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.MathUtil;
+
 import static frc.robot.Constants.BusConstants.kDefaultBus;
 import static frc.robot.Constants.LaunchFeederConstants.*;
 import frc.robot.Constants.CANConstants;
@@ -98,7 +100,7 @@ public class LaunchFeeder extends SubsystemBase {
     voltageOverride = false;
     voltageDemand = 0.0;
 
-    targetRps = clamp(rps, -kMaxRPS, kMaxRPS);
+    targetRps = MathUtil.clamp(rps, -kMaxRPS, kMaxRPS);
   }
 
   public void setVoltage(double volts) {
@@ -106,7 +108,7 @@ public class LaunchFeeder extends SubsystemBase {
     System.out.println("[LaunchFeeder] setVoltage called: " + volts);
 
     voltageOverride = true;
-    voltageDemand = clamp(volts, -12.0, 12.0);
+    voltageDemand = MathUtil.clamp(volts, -12.0, 12.0);
 
     targetRps = 0.0;
     rpsLimiter.reset(0.0);
@@ -199,9 +201,5 @@ public class LaunchFeeder extends SubsystemBase {
 
   public Command stopCommand() {
     return runOnce(this::stop);
-  }
-
-  private static double clamp(double val, double min, double max) {
-    return Math.max(min, Math.min(max, val));
   }
 }

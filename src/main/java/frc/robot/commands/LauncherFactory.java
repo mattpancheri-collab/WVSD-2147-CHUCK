@@ -1,5 +1,7 @@
 package frc.robot.commands;
 
+import edu.wpi.first.math.MathUtil;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
@@ -10,7 +12,8 @@ import frc.robot.subsystems.Launcher;
 import static frc.robot.Constants.ShootingConstants.*;
 
 public final class LauncherFactory {
-  private LauncherFactory() {}
+  private LauncherFactory() {
+  }
 
   public static Command shootFeedVoltage(
       Launcher launcher,
@@ -22,14 +25,13 @@ public final class LauncherFactory {
     final double shooterVolts = clamp(kShooterVolts);
 
     // Feeders (usually no polarity needed; flip in subsystem if required)
-    final double floorFeederVolts  = clamp(kFloorFeederVolts);
+    final double floorFeederVolts = clamp(kFloorFeederVolts);
     final double launchFeederVolts = clamp(kLaunchFeederVolts);
 
     Command spinUpShooter = Commands.startEnd(
         () -> launcher.setVoltage(shooterVolts),
         () -> launcher.setVoltage(0.0),
-        launcher
-    );
+        launcher);
 
     Command runFeeders = Commands.startEnd(
         () -> {
@@ -41,15 +43,13 @@ public final class LauncherFactory {
           launchFeeder.setVoltage(0.0);
         },
         floorFeeder,
-        launchFeeder
-    );
+        launchFeeder);
 
     return spinUpShooter.alongWith(
-        Commands.waitSeconds(kShooterSpinUpSeconds).andThen(runFeeders)
-    );
+        Commands.waitSeconds(kShooterSpinUpSeconds).andThen(runFeeders));
   }
 
   private static double clamp(double volts) {
-    return Math.max(-kMaxVoltage, Math.min(kMaxVoltage, volts));
+    return MathUtil.clamp(volts, -kMaxVoltage, kMaxVoltage);
   }
 }

@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.MathUtil;
+
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -71,12 +73,12 @@ public class IntakeGround extends SubsystemBase {
     voltageOverride = false;
     voltageDemand = 0.0;
 
-    targetRps = clamp(rps, -IntakeFloorConstants.kMaxRPS, IntakeFloorConstants.kMaxRPS);
+    targetRps = MathUtil.clamp(rps, -IntakeFloorConstants.kMaxRPS, IntakeFloorConstants.kMaxRPS);
   }
 
   public void setVoltage(double volts) {
     voltageOverride = true;
-    voltageDemand = clamp(volts, -12.0, 12.0);
+    voltageDemand = MathUtil.clamp(volts, -12.0, 12.0);
 
     targetRps = 0.0;
     rpsLimiter.reset(0.0);
@@ -163,7 +165,4 @@ public class IntakeGround extends SubsystemBase {
   // Util
   // ---------------------------------------------------------------------------
 
-  private static double clamp(double val, double min, double max) {
-    return Math.max(min, Math.min(max, val));
-  }
 }

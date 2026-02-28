@@ -8,7 +8,11 @@ import frc.robot.subsystems.IntakeGround;
 import frc.robot.subsystems.IntakePivot;
 import frc.robot.subsystems.LaunchFeeder;
 
-import static frc.robot.Constants.TestingConstants.*;
+import edu.wpi.first.math.MathUtil;
+import frc.robot.Constants.IntakePivotConstants;
+import frc.robot.Constants.IntakeFloorConstants;
+import frc.robot.Constants.FloorFeederConstants;
+import frc.robot.Constants.LaunchFeederConstants;
 
 public final class IntakeFactory {
   private IntakeFactory() {
@@ -20,14 +24,14 @@ public final class IntakeFactory {
       FloorFeeder floorFeeder,
       LaunchFeeder launchFeeder) {
 
-    final double intakeVolts = clampVolts(kTestVoltsIntakeGround);
-    final double floorVolts = clampVolts(kTestVoltsFloorFeeder);
-    final double launchVolts = clampVolts(kTestVoltsLaunchFeeder);
+    final double intakeVolts = IntakeFloorConstants.kIntakeVolts;
+    final double floorVolts = FloorFeederConstants.kIntakeVolts;
+    final double launchVolts = LaunchFeederConstants.kIntakeVolts;
 
-    // Pivot: deploy while held, stow on release
+    // Pivot: move to 0 deg while held, return to 90 deg on release
     Command pivotCmd = Commands.startEnd(
-        () -> intakePivot.setAngleDegrees(frc.robot.Constants.IntakePivotConstants.kDeployAngleDeg),
-        () -> intakePivot.setAngleDegrees(frc.robot.Constants.IntakePivotConstants.kMinAngleDeg),
+        () -> intakePivot.setAngleDegrees(IntakePivotConstants.kIntakeAngleDeg),
+        () -> intakePivot.setAngleDegrees(IntakePivotConstants.kIdleAngleDeg),
         intakePivot);
 
     // Intake roller
@@ -48,8 +52,6 @@ public final class IntakeFactory {
         () -> launchFeeder.setVoltage(0.0),
         launchFeeder);
 
-    // Parallel group already stops on end because each is startEnd.
-    // (No finallyDo needed, so this works across WPILib versions.)
     return Commands.parallel(pivotCmd, intakeCmd, floorCmd, launchCmd);
   }
 
@@ -68,7 +70,7 @@ public final class IntakeFactory {
       double floorMaxRps,
       double launchMaxRps) {
 
-    final double p = clamp(percent, 0.0, 1.0);
+    final double p = MathUtil.clamp(percent, 0.0, 1.0);
 
     final double intakeRps = p * intakeMaxRps;
     final double floorRps = p * floorMaxRps;
@@ -91,11 +93,4 @@ public final class IntakeFactory {
         launchFeederAutoStop).andThen(intakePivot.setAngleCommand(stowDeg));
   }
 
-  private static double clamp(double val, double min, double max) {
-    return Math.max(min, Math.min(max, val));
-  }
-
-  private static double clampVolts(double volts) {
-    return clamp(volts, -12.0, 12.0);
-  }
 }
