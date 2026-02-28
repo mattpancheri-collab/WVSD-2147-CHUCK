@@ -129,14 +129,14 @@ public class RobotContainer {
                 // =========================================================================
                 drivetrain.setDefaultCommand(
                                 drivetrain.applyRequest(() -> drive
-                                                .withVelocityX(-driverJoystick.getLeftY() * MaxSpeed)
+                                                .withVelocityX(driverJoystick.getLeftY() * MaxSpeed)
                                                 .withVelocityY(-driverJoystick.getLeftX() * MaxSpeed)
                                                 .withRotationalRate(-driverJoystick.getRightX() * MaxAngularRate)));
 
                 // Right Bumper: Slow Driving Mode
                 driverJoystick.rightBumper().whileTrue(
                                 drivetrain.applyRequest(() -> slowDrive
-                                                .withVelocityX(-driverJoystick.getLeftY() * SlowMaxSpeed)
+                                                .withVelocityX(driverJoystick.getLeftY() * SlowMaxSpeed)
                                                 .withVelocityY(-driverJoystick.getLeftX() * SlowMaxSpeed)
                                                 .withRotationalRate(-driverJoystick.getRightX() * SlowMaxAngularRate)));
 
@@ -162,9 +162,10 @@ public class RobotContainer {
                                                                                                                   // forward
                 driverJoystick.povDown().whileTrue(drivetrain.applyRequest(() -> brake)); // X-pattern Brake
                 driverJoystick.povLeft().whileTrue(drivetrain.applyRequest(() -> drive.withVelocityX(0).withVelocityY(0)
-                                .withRotationalRate(0.5 * MaxAngularRate))); // Rotate CCW
+                                .withRotationalRate(-0.5 * MaxAngularRate))); // Rotate CCW (physically corrected)
                 driverJoystick.povRight().whileTrue(drivetrain.applyRequest(() -> drive.withVelocityX(0)
-                                .withVelocityY(0).withRotationalRate(-0.5 * MaxAngularRate))); // Rotate CW
+                                .withVelocityY(0).withRotationalRate(0.5 * MaxAngularRate))); // Rotate CW (physically
+                                                                                              // corrected)
 
                 drivetrain.registerTelemetry(logger::telemeterize);
 
