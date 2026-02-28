@@ -50,6 +50,9 @@ public class RobotContainer {
                         .withRotationalDeadband(SlowMaxAngularRate * 0.1)
                         .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
+        private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+        private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+
         private final Telemetry logger = new Telemetry(MaxSpeed);
 
         // Controllers
@@ -153,10 +156,15 @@ public class RobotContainer {
                 driverJoystick.b().onTrue(Commands.print("Placeholder: B Button"));
                 driverJoystick.x().onTrue(Commands.print("Placeholder: X Button"));
                 driverJoystick.y().onTrue(Commands.print("Placeholder: Y Button"));
-                driverJoystick.povUp().onTrue(Commands.print("Placeholder: Servo Loose"));
-                driverJoystick.povDown().onTrue(Commands.print("Placeholder: Servo Break"));
-                driverJoystick.povLeft().onTrue(Commands.print("Placeholder: POV Left"));
-                driverJoystick.povRight().onTrue(Commands.print("Placeholder: POV Right"));
+                // POV Buttons: Brake, Point, and Rotation
+                driverJoystick.povUp().whileTrue(drivetrain.applyRequest(
+                                () -> point.withModuleDirection(new edu.wpi.first.math.geometry.Rotation2d(0)))); // Point
+                                                                                                                  // forward
+                driverJoystick.povDown().whileTrue(drivetrain.applyRequest(() -> brake)); // X-pattern Brake
+                driverJoystick.povLeft().whileTrue(drivetrain.applyRequest(() -> drive.withVelocityX(0).withVelocityY(0)
+                                .withRotationalRate(0.5 * MaxAngularRate))); // Rotate CCW
+                driverJoystick.povRight().whileTrue(drivetrain.applyRequest(() -> drive.withVelocityX(0)
+                                .withVelocityY(0).withRotationalRate(-0.5 * MaxAngularRate))); // Rotate CW
 
                 drivetrain.registerTelemetry(logger::telemeterize);
 
