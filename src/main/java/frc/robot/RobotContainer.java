@@ -104,7 +104,7 @@ public class RobotContainer {
                                                 launchFeeder));
 
                 NamedCommands.registerCommand("Shoot",
-                                LauncherFactory.shootFeedVoltage(launcher, launchFeeder));
+                                LauncherFactory.shootFeedVoltage(launcher, floorFeeder, launchFeeder));
 
                 NamedCommands.registerCommand("Stow",
                                 intakePivot.runOnce(() -> intakePivot
@@ -142,11 +142,12 @@ public class RobotContainer {
                                                 .withRotationalRate(-driverJoystick.getRightX() * SlowMaxAngularRate)));
 
                 // Triggers and Bumpers: Factory Commands
-                driverJoystick.leftTrigger().whileTrue(IntakeFactory.intakeOnlyCommand(intakeGround));
-                driverJoystick.rightTrigger().whileTrue(LauncherFactory.shootFeedVoltage(launcher, launchFeeder));
+                driverJoystick.leftTrigger().whileTrue(IntakeFactory.intakeOnlyCommand(intakeGround, intakePivot));
+                driverJoystick.rightTrigger()
+                                .whileTrue(LauncherFactory.shootFeedVoltage(launcher, floorFeeder, launchFeeder));
 
                 driverJoystick.leftBumper()
-                                .onTrue(intakePivot.setAngleCommand(Constants.IntakePivotConstants.kIdleAngleDeg));
+                                .onTrue(intakePivot.setAngleCommand(Constants.IntakePivotConstants.kIntakeAngleDeg));
 
                 // A Button: Gyro Reset (Seed to 180 if needed to fix inversion)
                 driverJoystick.a().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
@@ -253,7 +254,7 @@ public class RobotContainer {
 
                 testingJoystick.rightBumper().whileTrue(
                                 LauncherFactory.shootFeedVoltage(
-                                                launcher, launchFeeder));
+                                                launcher, floorFeeder, launchFeeder));
         }
 
         public Command getAutonomousCommand() {

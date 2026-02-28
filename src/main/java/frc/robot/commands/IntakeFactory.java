@@ -11,8 +11,8 @@ import frc.robot.subsystems.LaunchFeeder;
 import edu.wpi.first.math.MathUtil;
 import frc.robot.Constants.IntakePivotConstants;
 import frc.robot.Constants.IntakeFloorConstants;
-import frc.robot.Constants.FloorFeederConstants;
-import frc.robot.Constants.LaunchFeederConstants;
+//import frc.robot.Constants.FloorFeederConstants;
+//import frc.robot.Constants.LaunchFeederConstants;
 
 public final class IntakeFactory {
   private IntakeFactory() {
@@ -55,11 +55,13 @@ public final class IntakeFactory {
     return intakeCmd;
   }
 
-  public static Command intakeOnlyCommand(IntakeGround intakeGround) {
-    return Commands.startEnd(
-        () -> intakeGround.setVoltage(IntakeFloorConstants.kIntakeVolts),
-        () -> intakeGround.setVoltage(0.0),
-        intakeGround);
+  public static Command intakeOnlyCommand(IntakeGround intakeGround, IntakePivot intakePivot) {
+    return Commands.parallel(
+        intakePivot.setAngleCommand(IntakePivotConstants.kIdleAngleDeg),
+        Commands.startEnd(
+            () -> intakeGround.setVoltage(IntakeFloorConstants.kIntakeVolts),
+            () -> intakeGround.setVoltage(0.0),
+            intakeGround));
   }
 
   // ---------------------------------------------------------------------------
