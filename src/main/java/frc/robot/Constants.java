@@ -313,9 +313,9 @@ public final class Constants {
     public static final double kHoodFarDeg = 45.0;
 
     // Custom Button Mappings (B, X, Y)
-    public static final double kHoodAngle1 = -10.0;
-    public static final double kHoodAngle2 = -30.0;
-    public static final double kHoodAngle3 = -45.0;
+    public static final double kHoodAngle1 = 10.0;
+    public static final double kHoodAngle2 = 30.0;
+    public static final double kHoodAngle3 = 45.0;
   }
 
   // ===========================================================================

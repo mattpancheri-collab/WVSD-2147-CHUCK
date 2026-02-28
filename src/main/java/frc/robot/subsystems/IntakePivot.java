@@ -92,7 +92,7 @@ public class IntakePivot extends SubsystemBase {
     config.Feedback.SensorToMechanismRatio = IntakePivotConstants.kGearRatio;
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive; // flip if needed
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     // Slot 0 PID for POSITION control
     Slot0Configs slot0 = config.Slot0;

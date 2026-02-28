@@ -112,7 +112,7 @@ public class Launcher extends SubsystemBase {
     cfg.Feedback.SensorToMechanismRatio = kHoodGearRatio;
 
     cfg.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    cfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     Slot0Configs s0 = cfg.Slot0;
     s0.kP = kHoodP;

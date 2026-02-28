@@ -57,7 +57,7 @@ public final class IntakeFactory {
 
   public static Command intakeOnlyCommand(IntakeGround intakeGround, IntakePivot intakePivot) {
     return Commands.parallel(
-        intakePivot.setAngleCommand(IntakePivotConstants.kIdleAngleDeg),
+        intakePivot.setAngleCommand(IntakePivotConstants.kIntakeAngleDeg),
         Commands.startEnd(
             () -> intakeGround.setVoltage(IntakeFloorConstants.kIntakeVolts),
             () -> intakeGround.setVoltage(0.0),

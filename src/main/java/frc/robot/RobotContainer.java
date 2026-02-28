@@ -147,7 +147,7 @@ public class RobotContainer {
                                 .whileTrue(LauncherFactory.shootFeedVoltage(launcher, floorFeeder, launchFeeder));
 
                 driverJoystick.leftBumper()
-                                .onTrue(intakePivot.setAngleCommand(Constants.IntakePivotConstants.kIntakeAngleDeg));
+                                .onTrue(intakePivot.setAngleCommand(Constants.IntakePivotConstants.kIdleAngleDeg));
 
                 // A Button: Gyro Reset (Seed to 180 if needed to fix inversion)
                 driverJoystick.a().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
