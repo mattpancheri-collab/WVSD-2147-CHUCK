@@ -25,34 +25,41 @@ public final class IntakeFactory {
       LaunchFeeder launchFeeder) {
 
     final double intakeVolts = IntakeFloorConstants.kIntakeVolts;
-    final double floorVolts = FloorFeederConstants.kIntakeVolts;
-    final double launchVolts = LaunchFeederConstants.kIntakeVolts;
+    /*
+     * // Pivot, FloorFeeder, and LaunchFeeder logic commented out to follow
+     * "Ground Roller Only" rule
+     * final double floorVolts = FloorFeederConstants.kIntakeVolts;
+     * final double launchVolts = LaunchFeederConstants.kIntakeVolts;
+     * 
+     * Command pivotCmd = Commands.startEnd(
+     * () -> intakePivot.setAngleDegrees(IntakePivotConstants.kIntakeAngleDeg),
+     * () -> { },
+     * intakePivot);
+     * 
+     * Command floorCmd = Commands.startEnd(
+     * () -> floorFeeder.setVoltage(+floorVolts),
+     * () -> floorFeeder.setVoltage(0.0),
+     * floorFeeder);
+     * 
+     * Command launchCmd = Commands.startEnd(
+     * () -> launchFeeder.setVoltage(+launchVolts),
+     * () -> launchFeeder.setVoltage(0.0),
+     * launchFeeder);
+     */
 
-    // Pivot: move to 0 deg while held, return to 90 deg on release
-    Command pivotCmd = Commands.startEnd(
-        () -> intakePivot.setAngleDegrees(IntakePivotConstants.kIntakeAngleDeg),
-        () -> intakePivot.setAngleDegrees(IntakePivotConstants.kIdleAngleDeg),
-        intakePivot);
-
-    // Intake roller
     Command intakeCmd = Commands.startEnd(
         () -> intakeGround.setVoltage(+intakeVolts),
         () -> intakeGround.setVoltage(0.0),
         intakeGround);
 
-    // Floor feeder
-    Command floorCmd = Commands.startEnd(
-        () -> floorFeeder.setVoltage(+floorVolts),
-        () -> floorFeeder.setVoltage(0.0),
-        floorFeeder);
+    return intakeCmd;
+  }
 
-    // Launch feeder
-    Command launchCmd = Commands.startEnd(
-        () -> launchFeeder.setVoltage(+launchVolts),
-        () -> launchFeeder.setVoltage(0.0),
-        launchFeeder);
-
-    return Commands.parallel(pivotCmd, intakeCmd, floorCmd, launchCmd);
+  public static Command intakeOnlyCommand(IntakeGround intakeGround) {
+    return Commands.startEnd(
+        () -> intakeGround.setVoltage(IntakeFloorConstants.kIntakeVolts),
+        () -> intakeGround.setVoltage(0.0),
+        intakeGround);
   }
 
   // ---------------------------------------------------------------------------

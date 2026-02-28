@@ -34,7 +34,7 @@ public final class Constants {
     public static final double kLaunchFeederVolts = GlobalConstants.kDefaultVoltage;
 
     // Delay before feeders start (seconds)
-    public static final double kShooterSpinUpSeconds = 3.0;
+    public static final double kShooterSpinUpSeconds = 2.0;
   }
 
   // ===========================================================================
@@ -311,6 +311,11 @@ public final class Constants {
 
     public static final double kHoodCloseDeg = 20.0;
     public static final double kHoodFarDeg = 45.0;
+
+    // Custom Button Mappings (B, X, Y)
+    public static final double kHoodAngle1 = 10.0;
+    public static final double kHoodAngle2 = 30.0;
+    public static final double kHoodAngle3 = 45.0;
   }
 
   // ===========================================================================

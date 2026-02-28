@@ -29,6 +29,7 @@ import frc.robot.subsystems.Climber;
 // Factories
 import frc.robot.commands.IntakeFactory;
 import frc.robot.commands.LauncherFactory;
+import frc.robot.commands.ClimbFactory;
 
 public class RobotContainer {
 
@@ -103,7 +104,7 @@ public class RobotContainer {
                                                 launchFeeder));
 
                 NamedCommands.registerCommand("Shoot",
-                                LauncherFactory.shootFeedVoltage(launcher, floorFeeder, launchFeeder));
+                                LauncherFactory.shootFeedVoltage(launcher, launchFeeder));
 
                 NamedCommands.registerCommand("Stow",
                                 intakePivot.runOnce(() -> intakePivot
@@ -141,21 +142,22 @@ public class RobotContainer {
                                                 .withRotationalRate(-driverJoystick.getRightX() * SlowMaxAngularRate)));
 
                 // Triggers and Bumpers: Factory Commands
-                driverJoystick.leftBumper().whileTrue(
-                                IntakeFactory.deployAndIntakeChainVoltage(intakePivot, intakeGround, floorFeeder,
-                                                launchFeeder));
-                driverJoystick.rightTrigger().whileTrue(
-                                LauncherFactory.shootFeedVoltage(launcher, floorFeeder, launchFeeder));
+                driverJoystick.leftTrigger().whileTrue(IntakeFactory.intakeOnlyCommand(intakeGround));
+                driverJoystick.rightTrigger().whileTrue(LauncherFactory.shootFeedVoltage(launcher, launchFeeder));
+
+                driverJoystick.leftBumper()
+                                .onTrue(intakePivot.setAngleCommand(Constants.IntakePivotConstants.kIdleAngleDeg));
 
                 // A Button: Gyro Reset (Seed to 180 if needed to fix inversion)
                 driverJoystick.a().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-                // Placeholders (Mapped to Print commands so they don't do nothing and can be
-                // identified easily)
-                driverJoystick.leftTrigger().onTrue(Commands.print("Placeholder: Left Trigger"));
-                driverJoystick.b().onTrue(Commands.print("Placeholder: B Button"));
-                driverJoystick.x().onTrue(Commands.print("Placeholder: X Button"));
-                driverJoystick.y().onTrue(Commands.print("Placeholder: Y Button"));
+                // Start Button: Climber Control
+                driverJoystick.start().whileTrue(ClimbFactory.climbCommand(climber));
+
+                driverJoystick.b().onTrue(launcher.setHoodDegreesCommand(Constants.LauncherConstants.kHoodAngle1));
+                driverJoystick.x().onTrue(launcher.setHoodDegreesCommand(Constants.LauncherConstants.kHoodAngle2));
+                driverJoystick.y().onTrue(launcher.setHoodDegreesCommand(Constants.LauncherConstants.kHoodAngle3));
+
                 // POV Buttons: Brake, Point, and Rotation
                 driverJoystick.povUp().whileTrue(drivetrain.applyRequest(
                                 () -> point.withModuleDirection(new edu.wpi.first.math.geometry.Rotation2d(0)))); // Point
@@ -251,7 +253,7 @@ public class RobotContainer {
 
                 testingJoystick.rightBumper().whileTrue(
                                 LauncherFactory.shootFeedVoltage(
-                                                launcher, floorFeeder, launchFeeder));
+                                                launcher, launchFeeder));
         }
 
         public Command getAutonomousCommand() {
