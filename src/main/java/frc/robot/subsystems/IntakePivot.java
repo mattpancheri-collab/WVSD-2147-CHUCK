@@ -99,6 +99,8 @@ public class IntakePivot extends SubsystemBase {
     slot0.kP = IntakePivotConstants.kP;
     slot0.kI = IntakePivotConstants.kI;
     slot0.kD = IntakePivotConstants.kD;
+    slot0.kG = IntakePivotConstants.kG;
+    slot0.GravityType = com.ctre.phoenix6.signals.GravityTypeValue.Arm_Cosine;
 
     // Current limits
     CurrentLimitsConfigs currentLimits = config.CurrentLimits;

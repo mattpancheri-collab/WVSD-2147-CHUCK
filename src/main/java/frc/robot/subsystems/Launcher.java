@@ -54,7 +54,7 @@ public class Launcher extends SubsystemBase {
 
   // State targets
   private double shooterTargetRps = 0.0;
-  private double hoodTargetDeg = kHoodMinDeg;
+  private double hoodTargetDeg = 30.0;
   private double shooterVoltageDemand = 0.0;
 
   public Launcher() {
