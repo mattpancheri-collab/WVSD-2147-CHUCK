@@ -107,7 +107,7 @@ public final class Constants {
 
     public static final double kGearRatio = 100.0;
 
-    public static final double kIntakeAngleDeg = 25.0;
+    public static final double kIntakeAngleDeg = 35.0;
     public static final double kIdleAngleDeg = -5.0;
 
     /* --- PID TUNING: Controls the Arm Movement --- */
