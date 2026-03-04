@@ -124,7 +124,7 @@ public final class Constants {
     /**
      * Derivative Gain: The "Brake". Smooths out the stopping to prevent bouncing.
      */
-    public static final double kD = 5.0;
+    public static final double kD = 2.5;
     public static final double kG = 0.75;
 
     public static final double kMaxVelocityRPS = 5.0;
