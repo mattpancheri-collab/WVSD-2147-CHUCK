@@ -115,7 +115,7 @@ public final class Constants {
      * Proportional Gain: The "Strength". Higher = faster response, but more
      * shaking.
      */
-    public static final double kP = 80.0;
+    public static final double kP = 120.0;
     /**
      * Integral Gain: The "History". Builds power over time to reach the target
      * exactly. Usually 0.
@@ -125,13 +125,13 @@ public final class Constants {
      * Derivative Gain: The "Brake". Smooths out the stopping to prevent bouncing.
      */
     public static final double kD = 5.0;
-    public static final double kG = 0.5;
+    public static final double kG = 0.75;
 
     public static final double kMaxVelocityRPS = 5.0;
     public static final double kRampRPSPerSec = 20.0;
 
     public static final boolean kEnableStatorLimit = true;
-    public static final double kStatorLimitAmps = 13.3;
+    public static final double kStatorLimitAmps = 20;
   }
 
   // ===========================================================================
@@ -162,7 +162,7 @@ public final class Constants {
     public static final double kRampRPSPerSec = GlobalConstants.kDefaultRampRate;
 
     public static final boolean kEnableStatorLimit = true;
-    public static final double kStatorLimitAmps = 40.0;
+    public static final double kStatorLimitAmps = 60.0;
   }
 
   // ===========================================================================
