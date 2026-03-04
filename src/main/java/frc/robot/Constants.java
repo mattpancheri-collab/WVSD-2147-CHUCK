@@ -115,7 +115,7 @@ public final class Constants {
      * Proportional Gain: The "Strength". Higher = faster response, but more
      * shaking.
      */
-    public static final double kP = 240.0;
+    public static final double kP = 80.0;
     /**
      * Integral Gain: The "History". Builds power over time to reach the target
      * exactly. Usually 0.
@@ -125,13 +125,13 @@ public final class Constants {
      * Derivative Gain: The "Brake". Smooths out the stopping to prevent bouncing.
      */
     public static final double kD = 5.0;
-    public static final double kG = 1.5;
+    public static final double kG = 0.5;
 
     public static final double kMaxVelocityRPS = 5.0;
     public static final double kRampRPSPerSec = 20.0;
 
     public static final boolean kEnableStatorLimit = true;
-    public static final double kStatorLimitAmps = 40.0;
+    public static final double kStatorLimitAmps = 13.3;
   }
 
   // ===========================================================================
@@ -288,7 +288,7 @@ public final class Constants {
 
     /* --- HOOD ANGLE TUNING --- */
     /** Proportional Gain: Main power to move the hood to a specific angle. */
-    public static final double kHoodP = 60.0;
+    public static final double kHoodP = 30.0;
     public static final double kHoodI = 0.0;
     /** Derivative Gain: Dampens movement to prevent the hood from bouncing. */
     public static final double kHoodD = 0.5;
@@ -298,14 +298,14 @@ public final class Constants {
     /**
      * Gravity Gain: Constant voltage to hold the hood up against its own weight.
      */
-    public static final double kHoodG = 0.4;
+    public static final double kHoodG = 0.2;
     /** Velocity Gain: Voltage required for steady movement. */
     public static final double kHoodV = 0.0;
     /** Acceleration Gain: Extra power to start moving. */
     public static final double kHoodA = 0.0;
 
     public static final boolean kHoodEnableStatorLimit = true;
-    public static final double kHoodStatorLimitAmps = 60.0;
+    public static final double kHoodStatorLimitAmps = 30.0;
 
     public static final double kHoodMinDeg = 25.0;
     public static final double kHoodMaxDeg = 60.0;
