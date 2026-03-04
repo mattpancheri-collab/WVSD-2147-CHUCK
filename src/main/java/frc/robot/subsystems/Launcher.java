@@ -55,6 +55,7 @@ public class Launcher extends SubsystemBase {
   // State targets
   private double shooterTargetRps = 0.0;
   private double hoodTargetDeg = 38.0; // Locked to Angle 1 for this week
+  private boolean m_hoodActive = false; // Prevents movement on enable until commanded
   private double shooterVoltageDemand = 0.0;
 
   public Launcher() {
@@ -68,7 +69,6 @@ public class Launcher extends SubsystemBase {
     shooterFollower2.setControl(follower2Request);
 
     stop();
-    setHoodDegrees(hoodTargetDeg);
   }
 
   // ---------------------------------------------------------------------------
@@ -162,6 +162,7 @@ public class Launcher extends SubsystemBase {
 
   public void setHoodDegrees(double deg) {
     hoodTargetDeg = MathUtil.clamp(deg, kHoodMinDeg, kHoodMaxDeg);
+    m_hoodActive = true;
   }
 
   public void stop() {
@@ -238,9 +239,13 @@ public class Launcher extends SubsystemBase {
         break;
     }
 
-    // hood always position-controlled
-    double hoodRotations = hoodTargetDeg / 360.0;
-    hoodMotor.setControl(hoodPositionRequest.withPosition(hoodRotations));
+    // hood position-controlled only if active
+    if (m_hoodActive) {
+      double hoodRotations = hoodTargetDeg / 360.0;
+      hoodMotor.setControl(hoodPositionRequest.withPosition(hoodRotations));
+    } else {
+      hoodMotor.setVoltage(0.0);
+    }
   }
 
   // ---------------------------------------------------------------------------

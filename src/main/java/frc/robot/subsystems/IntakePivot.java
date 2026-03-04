@@ -120,7 +120,7 @@ public class IntakePivot extends SubsystemBase {
     rpsLimiter.reset(0.0);
     voltageDemand = 0.0;
 
-    targetDeg = MathUtil.clamp(deg, 0.0, 90.0);
+    targetDeg = MathUtil.clamp(deg, -20.0, 100.0);
 
     // Phoenix PositionVoltage uses "mechanism rotations" because we set
     // SensorToMechanismRatio.
