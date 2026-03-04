@@ -11,7 +11,7 @@ public final class Constants {
     private GlobalConstants() {
     }
 
-    public static final double kDefaultVoltage = 11.0;
+    public static final double kDefaultVoltage = 12.0;
     public static final double kDefaultRampRate = 200.0;
   }
 
@@ -29,9 +29,9 @@ public final class Constants {
     public static final double kShooterPolarity = -1.0;
 
     // Voltages (100% = 12V)
-    public static final double kShooterVolts = GlobalConstants.kDefaultVoltage;
+    public static final double kShooterVolts = 12.0;
     public static final double kFloorFeederVolts = 12.0;
-    public static final double kLaunchFeederVolts = GlobalConstants.kDefaultVoltage;
+    public static final double kLaunchFeederVolts = 12.0;
 
     // Delay before feeders start (seconds)
     public static final double kShooterSpinUpSeconds = 2.0;
@@ -45,11 +45,11 @@ public final class Constants {
     }
 
     // 100% = 12V
-    public static final double kTestVoltsShooter = GlobalConstants.kDefaultVoltage;
+    public static final double kTestVoltsShooter = 12.0;
     public static final double kTestVoltsFloorFeeder = 12.0;
-    public static final double kTestVoltsLaunchFeeder = GlobalConstants.kDefaultVoltage;
-    public static final double kTestVoltsIntakeGround = GlobalConstants.kDefaultVoltage;
-    public static final double kTestVoltsIntakePivot = GlobalConstants.kDefaultVoltage;
+    public static final double kTestVoltsLaunchFeeder = 12.0;
+    public static final double kTestVoltsIntakeGround = 12.0;
+    public static final double kTestVoltsIntakePivot = 12.0;
   }
 
   // ===========================================================================
@@ -211,7 +211,7 @@ public final class Constants {
     }
 
     // CAN IDs are now in CANConstants.kLaunchFeederID / CANConstants.kCANrangeID
-    public static final double kIntakeVolts = GlobalConstants.kDefaultVoltage;
+    public static final double kIntakeVolts = 12.0;
 
     public static final boolean kEnableCANrange = false;
 
@@ -317,6 +317,24 @@ public final class Constants {
     public static final double kHoodAngle1 = 38.0;
     public static final double kHoodAngle2 = 30.0;
     public static final double kHoodAngle3 = 45.0;
+
+    /*
+     * //
+     * ===========================================================================
+     * // DISTANCE-BASED SHOT FRAMEWORK (PRE-TUNED)
+     * //
+     * ===========================================================================
+     * public static final class DistanceShotConstants {
+     * public static final double kCloseRangeRps = 55.0;
+     * public static final double kCloseRangeDeg = 38.0;
+     * 
+     * public static final double kMidRangeRps = 65.0;
+     * public static final double kMidRangeDeg = 30.0;
+     * 
+     * public static final double kLongRangeRps = 75.0;
+     * public static final double kLongRangeDeg = 45.0;
+     * }
+     */
   }
 
   // ===========================================================================

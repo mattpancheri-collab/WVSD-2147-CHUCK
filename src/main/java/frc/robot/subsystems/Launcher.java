@@ -54,7 +54,7 @@ public class Launcher extends SubsystemBase {
 
   // State targets
   private double shooterTargetRps = 0.0;
-  private double hoodTargetDeg = 30.0;
+  private double hoodTargetDeg = 38.0; // Locked to Angle 1 for this week
   private double shooterVoltageDemand = 0.0;
 
   public Launcher() {
@@ -182,12 +182,12 @@ public class Launcher extends SubsystemBase {
 
   public void setCloseShot() {
     setShooterRps(kShooterCloseRPS);
-    setHoodDegrees(kHoodCloseDeg);
+    // setHoodDegrees(kHoodCloseDeg); // Disabled for this week
   }
 
   public void setFarShot() {
     setShooterRps(kShooterFarRPS);
-    setHoodDegrees(kHoodFarDeg);
+    // setHoodDegrees(kHoodFarDeg); // Disabled for this week
   }
 
   // ---------------------------------------------------------------------------
@@ -269,6 +269,17 @@ public class Launcher extends SubsystemBase {
         () -> setShooterRps(0.0),
         this);
   }
+
+  /*
+   * public void setDistanceShot(double rps, double deg) {
+   * setShooterRps(rps);
+   * setHoodDegrees(deg);
+   * }
+   * 
+   * public Command distanceShotCommand(double rps, double deg) {
+   * return runOnce(() -> setDistanceShot(rps, deg));
+   * }
+   */
 
   public Command runShooterVoltageCommand(double volts) {
     return Commands.startEnd(
