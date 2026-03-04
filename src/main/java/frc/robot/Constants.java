@@ -23,14 +23,14 @@ public final class Constants {
     }
 
     // Safety clamp
-    public static final double kMaxVoltage = 11.0;
+    public static final double kMaxVoltage = 12.0;
 
     // Polarity (+1 or -1)
     public static final double kShooterPolarity = -1.0;
 
     // Voltages (100% = 12V)
     public static final double kShooterVolts = GlobalConstants.kDefaultVoltage;
-    public static final double kFloorFeederVolts = GlobalConstants.kDefaultVoltage;
+    public static final double kFloorFeederVolts = 12.0;
     public static final double kLaunchFeederVolts = GlobalConstants.kDefaultVoltage;
 
     // Delay before feeders start (seconds)
@@ -46,7 +46,7 @@ public final class Constants {
 
     // 100% = 12V
     public static final double kTestVoltsShooter = GlobalConstants.kDefaultVoltage;
-    public static final double kTestVoltsFloorFeeder = GlobalConstants.kDefaultVoltage;
+    public static final double kTestVoltsFloorFeeder = 12.0;
     public static final double kTestVoltsLaunchFeeder = GlobalConstants.kDefaultVoltage;
     public static final double kTestVoltsIntakeGround = GlobalConstants.kDefaultVoltage;
     public static final double kTestVoltsIntakePivot = GlobalConstants.kDefaultVoltage;
@@ -142,7 +142,7 @@ public final class Constants {
     }
 
     // CAN ID is now in CANConstants.kIntakeID
-    public static final double kIntakeVolts = GlobalConstants.kDefaultVoltage;
+    public static final double kIntakeVolts = 12.0;
 
     /* --- SPEED TUNING: Controls the Roller Speed --- */
     /**
@@ -173,7 +173,7 @@ public final class Constants {
     }
 
     // CAN ID is now in CANConstants.kFloorFeederID
-    public static final double kIntakeVolts = GlobalConstants.kDefaultVoltage;
+    public static final double kIntakeVolts = 12.0;
 
     /* --- PID & FEEDFORWARD TUNING: Controls Feed Speed --- */
     /** Proportional Gain: Main correction power to stay at target speed. */
