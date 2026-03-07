@@ -3,29 +3,45 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.229638888888889,
-        "y": 6.0
+        "x": 3.5251957295373675,
+        "y": 5.621981020166073
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.229638888888887,
-        "y": 6.0
+        "x": 5.5048873072360625,
+        "y": 4.976429418742585
+      },
+      "isLocked": false,
+      "linkedName": "NorthBlue"
+    },
+    {
+      "anchor": {
+        "x": 6.064365361803085,
+        "y": 5.815646500593119
+      },
+      "prevControl": {
+        "x": 5.80254233197756,
+        "y": 5.628630050717744
+      },
+      "nextControl": {
+        "x": 6.817508896797154,
+        "y": 6.353606168446025
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 4.0,
-        "y": 6.0
+        "x": 7.57976851851852,
+        "y": 7.266907407407407
       },
       "prevControl": {
-        "x": 3.0,
-        "y": 6.0
+        "x": 5.988175925925928,
+        "y": 6.933972222222221
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "NorthWhite-IntakeReady"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +58,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -88.7811247648684
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Pick up shoot paths (Full Run)",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -90.0
   },
   "useDefaultConstraints": true
 }

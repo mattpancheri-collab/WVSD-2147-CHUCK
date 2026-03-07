@@ -1,0 +1,75 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.5195833333299653,
+        "y": 7.437435185180554
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.187842592585856,
+        "y": 4.684629629620368
+      },
+      "isLocked": false,
+      "linkedName": "NorthBlue"
+    },
+    {
+      "anchor": {
+        "x": 5.630879629635452,
+        "y": 5.391101851854589
+      },
+      "prevControl": {
+        "x": 5.312615145384758,
+        "y": 5.343834849245523
+      },
+      "nextControl": {
+        "x": 6.45103703704868,
+        "y": 5.512907407404762
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.669092592598414,
+        "y": 7.047657407410144
+      },
+      "prevControl": {
+        "x": 6.077500000005822,
+        "y": 6.714722222224958
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "NorthWhite-IntakeReady"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": -20.095231191803567
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -89.07595464722705
+  },
+  "reversed": false,
+  "folder": "Pick up shoot paths",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -91.33221985386963
+  },
+  "useDefaultConstraints": true
+}

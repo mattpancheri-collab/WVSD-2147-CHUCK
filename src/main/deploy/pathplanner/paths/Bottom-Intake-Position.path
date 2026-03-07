@@ -1,0 +1,59 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 7.498564814814814,
+        "y": 2.4190462962962966
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 8.498564814814813,
+        "y": 2.4190462962962966
+      },
+      "isLocked": false,
+      "linkedName": "End-Intake-Balls"
+    },
+    {
+      "anchor": {
+        "x": 2.8780740740740742,
+        "y": 2.776342592592591
+      },
+      "prevControl": {
+        "x": 1.8780740740740742,
+        "y": 2.776342592592591
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": -11.410983126765398
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 39.09385888622953
+  },
+  "reversed": false,
+  "folder": "Pick up shoot paths (Full Run)",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -89.31793960682748
+  },
+  "useDefaultConstraints": true
+}

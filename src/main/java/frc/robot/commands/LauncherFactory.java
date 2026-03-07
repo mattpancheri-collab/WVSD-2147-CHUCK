@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.FloorFeeder;
 import frc.robot.subsystems.LaunchFeeder;
 import frc.robot.subsystems.Launcher;
+import frc.robot.subsystems.IntakeGround;
 
 import static frc.robot.Constants.ShootingConstants.*;
 
@@ -18,11 +19,13 @@ public final class LauncherFactory {
   public static Command shootFeedVoltage(
       Launcher launcher,
       FloorFeeder floorFeeder,
-      LaunchFeeder launchFeeder) {
+      LaunchFeeder launchFeeder,
+      IntakeGround intakeGround) {
 
     final double shooterVolts = clamp(kShooterVolts);
     final double floorFeederVolts = clamp(kFloorFeederVolts);
     final double launchFeederVolts = clamp(kLaunchFeederVolts);
+    final double intakeVolts = frc.robot.Constants.IntakeFloorConstants.kIntakeVolts;
 
     Command spinUpShooter = Commands.startEnd(
         () -> launcher.setVoltage(shooterVolts),
@@ -33,13 +36,16 @@ public final class LauncherFactory {
         () -> {
           floorFeeder.setVoltage(floorFeederVolts);
           launchFeeder.setVoltage(launchFeederVolts);
+          intakeGround.setVoltage(intakeVolts);
         },
         () -> {
           floorFeeder.setVoltage(0.0);
           launchFeeder.setVoltage(0.0);
+          intakeGround.setVoltage(0.0);
         },
         floorFeeder,
-        launchFeeder);
+        launchFeeder,
+        intakeGround);
 
     return spinUpShooter.alongWith(
         Commands.waitSeconds(kShooterSpinUpSeconds).andThen(runFeeders));

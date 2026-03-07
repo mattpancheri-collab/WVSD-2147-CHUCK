@@ -1,0 +1,49 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Start-Intake-Position"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeFactory"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Middle-Intake-Position"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Bottom-Intake-Position"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "LauncherFactory"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 6.0
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "2026 Autos",
+  "choreoAuto": false
+}

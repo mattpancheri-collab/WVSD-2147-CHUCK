@@ -19,7 +19,7 @@ public final class AutoFactory {
    * Make sure the string matches the name of the file in
    * src/main/deploy/pathplanner/autos/
    */
-  public static Command exampleAuto() {
-    return new PathPlannerAuto("Example Auto");
+  public static Command collectShootAuto() {
+    return new PathPlannerAuto("Collect-Shoot");
   }
 }

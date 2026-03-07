@@ -99,12 +99,11 @@ public class RobotContainer {
                 // The first argument (e.g. "Intake") MUST perfectly match the string used in
                 // the PathPlanner GUI. The second argument is the WPILib Command to run.
 
-                NamedCommands.registerCommand("Intake",
-                                IntakeFactory.deployAndIntakeChainVoltage(intakePivot, intakeGround, floorFeeder,
-                                                launchFeeder));
+                NamedCommands.registerCommand("IntakeFactory",
+                                IntakeFactory.intakeOnlyCommand(intakeGround, intakePivot));
 
-                NamedCommands.registerCommand("Shoot",
-                                LauncherFactory.shootFeedVoltage(launcher, floorFeeder, launchFeeder));
+                NamedCommands.registerCommand("LauncherFactory",
+                                LauncherFactory.shootFeedVoltage(launcher, floorFeeder, launchFeeder, intakeGround));
 
                 NamedCommands.registerCommand("Stow",
                                 intakePivot.runOnce(() -> intakePivot
@@ -144,7 +143,7 @@ public class RobotContainer {
                 // Triggers and Bumpers: Factory Commands
                 driverJoystick.leftTrigger().whileTrue(IntakeFactory.intakeOnlyCommand(intakeGround, intakePivot));
                 driverJoystick.rightTrigger()
-                                .whileTrue(LauncherFactory.shootFeedVoltage(launcher, floorFeeder, launchFeeder));
+                                .whileTrue(LauncherFactory.shootFeedVoltage(launcher, floorFeeder, launchFeeder, intakeGround));
 
                 driverJoystick.leftBumper()
                                 .onTrue(intakePivot.setAngleCommand(Constants.IntakePivotConstants.kIdleAngleDeg));
@@ -267,7 +266,7 @@ public class RobotContainer {
 
                 testingJoystick.rightBumper().whileTrue(
                                 LauncherFactory.shootFeedVoltage(
-                                                launcher, floorFeeder, launchFeeder));
+                                                launcher, floorFeeder, launchFeeder, intakeGround));
         }
 
         public Command getAutonomousCommand() {
