@@ -32,8 +32,8 @@
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0,
-      "maxWaypointRelativePos": 0,
+      "minWaypointRelativePos": 0.0,
+      "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 3.0,
         "maxAcceleration": 3.5,
@@ -59,7 +59,7 @@
     "rotation": -91.7098140447539
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Blue Pick up shoot paths (Half Run)",
   "idealStartingState": {
     "velocity": 0,
     "rotation": -88.7811247648684

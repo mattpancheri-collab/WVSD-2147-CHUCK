@@ -3,45 +3,45 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.5251957295373675,
-        "y": 5.621981020166073
+        "x": 13.085379629629628,
+        "y": 2.4352870370370363
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.5048873072360625,
-        "y": 4.976429418742585
+        "x": 11.501907407407407,
+        "y": 2.1267129629629626
       },
       "isLocked": false,
-      "linkedName": "NorthBlue"
+      "linkedName": "Red-Start-Bottom"
     },
     {
       "anchor": {
-        "x": 6.064365361803085,
-        "y": 5.815646500593119
+        "x": 10.568064814814816,
+        "y": 2.1591944444444438
       },
       "prevControl": {
-        "x": 5.80254233197756,
-        "y": 5.628630050717744
+        "x": 11.380101851851853,
+        "y": 2.719499999999999
       },
       "nextControl": {
-        "x": 6.817508896797154,
-        "y": 6.353606168446025
+        "x": 10.20338866152715,
+        "y": 1.9075678986759539
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.57976851851852,
-        "y": 7.266907407407407
+        "x": 8.943990740740741,
+        "y": 0.9330185185185189
       },
       "prevControl": {
-        "x": 5.988175925925928,
-        "y": 6.933972222222221
+        "x": 10.300092592592595,
+        "y": 1.0385833333333345
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "NorthWhite-IntakeReady"
+      "linkedName": "Red-Intake-Start"
     }
   ],
   "rotationTargets": [],
@@ -58,13 +58,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -88.7811247648684
+    "rotation": 90.0
   },
   "reversed": false,
-  "folder": "Blue Pick up shoot paths (Full Run)",
+  "folder": "Red Pick up shoot paths (Half Run)",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -90.0
+    "rotation": 90.0
   },
   "useDefaultConstraints": true
 }

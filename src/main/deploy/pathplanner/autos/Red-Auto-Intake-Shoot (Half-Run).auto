@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Start-Top"
+            "pathName": "Red-Start-Top"
           }
         },
         {
@@ -17,7 +17,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Medium-Intake-halfRun"
+                  "pathName": "Red-Medium-Intake-Start"
                 }
               },
               {
@@ -32,7 +32,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "End-Half-Run-Shoot"
+            "pathName": "Red-End-Intake-Shoot"
           }
         },
         {
@@ -45,6 +45,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Auto (Half-Run)",
+  "folder": "Red Auto (Half-Run)",
   "choreoAuto": false
 }

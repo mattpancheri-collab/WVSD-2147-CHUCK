@@ -3,12 +3,16 @@
   "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
-    "New Folder",
-    "Pick up shoot paths (Full Run)"
+    "Blue Pick up shoot paths (Full Run)",
+    "Blue Pick up shoot paths (Half Run)",
+    "Red Pick up shoot paths (Half Run)",
+    "Red Pick up shoot paths (Full Run)"
   ],
   "autoFolders": [
-    "Auto (Full Run)",
-    "Auto (Half-Run)"
+    "Blue Auto (Full Run)",
+    "Blue Auto (Half-Run)",
+    "Red Auto (Full Run)",
+    "Red Auto (Half-Run)"
   ],
   "defaultMaxVel": 3.0,
   "defaultMaxAccel": 3.0,
