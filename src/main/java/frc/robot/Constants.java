@@ -128,7 +128,7 @@ public final class Constants {
     public static final double kG = 0.75;
 
     public static final double kMaxVelocityRPS = 10.0;
-    public static final double kRampRPSPerSec = 40.0;
+    public static final double kRampRPSPerSec = 42.0;
 
     public static final boolean kEnableStatorLimit = true;
     public static final double kStatorLimitAmps = 40;
