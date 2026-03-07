@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.109981481481482,
-        "y": 6.259981481481482
+        "x": 5.9890510083036785,
+        "y": 6.762455516014235
       },
       "isLocked": false,
       "linkedName": "Half-Run-Return"
     },
     {
       "anchor": {
-        "x": 3.186648148148149,
-        "y": 4.993203703703704
+        "x": 2.8688849347568213,
+        "y": 5.073262158956108
       },
       "prevControl": {
-        "x": 2.186648148148149,
-        "y": 4.993203703703704
+        "x": 3.2131791221826815,
+        "y": 5.331482799525504
       },
       "nextControl": null,
       "isLocked": false,
@@ -31,7 +31,7 @@
   "rotationTargets": [
     {
       "waypointRelativePos": 0.5,
-      "rotationDegrees": 10.041388947484066
+      "rotationDegrees": -28.888071878075582
     }
   ],
   "constraintZones": [],
