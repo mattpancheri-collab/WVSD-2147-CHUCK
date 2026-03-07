@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.5251957295373675,
-        "y": 5.621981020166073
+        "x": 3.365296296296296,
+        "y": 5.7240370370370375
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.490444444440385,
-        "y": 4.28673148147742
+        "x": 7.330545011199314,
+        "y": 4.3887874983483846
       },
       "isLocked": false,
       "linkedName": "NorthBlue"
@@ -45,10 +45,10 @@
     "rotation": -88.7811247648684
   },
   "reversed": false,
-  "folder": "Blue Pick up shoot paths (Half Run)",
+  "folder": "Blue Left Path (Half Run)",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -90.0
+    "rotation": -41.667078080963044
   },
   "useDefaultConstraints": true
 }

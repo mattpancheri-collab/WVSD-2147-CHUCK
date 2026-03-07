@@ -3,45 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.365296296296296,
-        "y": 5.7240370370370375
+        "x": 3.3815370370370372,
+        "y": 2.467768518518518
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.344987873994991,
-        "y": 5.078485435613549
-      },
-      "isLocked": false,
-      "linkedName": "NorthBlue"
-    },
-    {
-      "anchor": {
-        "x": 6.064365361803085,
-        "y": 5.815646500593119
-      },
-      "prevControl": {
-        "x": 5.80254233197756,
-        "y": 5.628630050717744
-      },
-      "nextControl": {
-        "x": 6.817508896797154,
-        "y": 6.353606168446025
+        "x": 7.108787037037039,
+        "y": 3.247324074074074
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.57976851851852,
-        "y": 7.266907407407407
+        "x": 7.59600925925926,
+        "y": 0.7706111111111102
       },
       "prevControl": {
-        "x": 5.988175925925928,
-        "y": 6.933972222222221
+        "x": 5.8338888888888905,
+        "y": 0.3158703703703689
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "NorthWhite-IntakeReady"
+      "linkedName": "Blue-Right-Start"
     }
   ],
   "rotationTargets": [],
@@ -58,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -88.7811247648684
+    "rotation": 90.90938044919919
   },
   "reversed": false,
-  "folder": "Blue Left Path (Full Run)",
+  "folder": "Blue Right Path (Half Run)",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -41.667078080963044
+    "rotation": 49.799836113904725
   },
   "useDefaultConstraints": true
 }

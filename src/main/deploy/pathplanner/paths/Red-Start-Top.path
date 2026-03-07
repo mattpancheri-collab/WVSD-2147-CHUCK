@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 13.085379629629628,
-        "y": 2.4352870370370363
+        "x": 13.166583333333334,
+        "y": 2.548972222222221
       },
       "prevControl": null,
       "nextControl": {
-        "x": 11.501907407407407,
-        "y": 2.1267129629629626
+        "x": 11.583111111111112,
+        "y": 2.2403981481481474
       },
       "isLocked": false,
       "linkedName": "Red-Start-Bottom"
@@ -61,10 +61,10 @@
     "rotation": 90.0
   },
   "reversed": false,
-  "folder": "Red Pick up shoot paths (Half Run)",
+  "folder": "Red Left Path (Half Run)",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 90.0
+    "rotation": 140.4118691523168
   },
   "useDefaultConstraints": true
 }

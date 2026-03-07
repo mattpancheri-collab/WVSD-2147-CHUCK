@@ -3,37 +3,32 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.669092592598414,
-        "y": 4.562824074074073
+        "x": 8.93587037037037,
+        "y": 4.652148148148148
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.825768518518519,
-        "y": 6.414268518518518
+        "x": 9.93587037037037,
+        "y": 4.652148148148148
       },
       "isLocked": false,
-      "linkedName": "Half-Run-Return"
+      "linkedName": "Red-Top-Mid-End"
     },
     {
       "anchor": {
-        "x": 2.845592592592593,
-        "y": 5.179972222222222
+        "x": 13.645685185185185,
+        "y": 5.12312962962963
       },
       "prevControl": {
-        "x": 3.1898867800184534,
-        "y": 5.438192862791618
+        "x": 11.209574074074073,
+        "y": 6.4548703703703705
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": null
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.41632088520054844,
-      "rotationDegrees": -44.32619034499343
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -47,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -36.869897645844084
+    "rotation": -147.8750015596124
   },
   "reversed": false,
-  "folder": "Blue Left Path (Half Run)",
+  "folder": "Red Right Path (Half Run)",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -91.7098140447539
+    "rotation": -88.72696997994323
   },
   "useDefaultConstraints": true
 }

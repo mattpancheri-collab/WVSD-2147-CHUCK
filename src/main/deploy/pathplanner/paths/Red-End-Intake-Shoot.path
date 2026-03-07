@@ -31,7 +31,7 @@
   "rotationTargets": [
     {
       "waypointRelativePos": 0.5,
-      "rotationDegrees": 51.52534180713788
+      "rotationDegrees": 45.449744888302895
     }
   ],
   "constraintZones": [],
@@ -50,7 +50,7 @@
     "rotation": 147.11524180245783
   },
   "reversed": false,
-  "folder": "Red Pick up shoot paths (Half Run)",
+  "folder": "Red Left Path (Half Run)",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 89.56353816845542

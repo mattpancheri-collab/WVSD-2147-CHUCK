@@ -3,10 +3,12 @@
   "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
-    "Blue Pick up shoot paths (Full Run)",
-    "Blue Pick up shoot paths (Half Run)",
-    "Red Pick up shoot paths (Half Run)",
-    "Red Pick up shoot paths (Full Run)"
+    "Blue Left Path (Full Run)",
+    "Blue Left Path (Half Run)",
+    "Blue Right Path (Half Run)",
+    "Red Right Path (Half Run)",
+    "Red Left Path (Full Run)",
+    "Red Left Path (Half Run)"
   ],
   "autoFolders": [
     "Blue Auto (Full Run)",

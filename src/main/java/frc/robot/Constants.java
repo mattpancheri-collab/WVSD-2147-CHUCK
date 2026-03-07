@@ -131,7 +131,7 @@ public final class Constants {
     public static final double kRampRPSPerSec = 42.0;
 
     public static final boolean kEnableStatorLimit = true;
-    public static final double kStatorLimitAmps = 40;
+    public static final double kStatorLimitAmps = 80.0;
   }
 
   // ===========================================================================
@@ -162,7 +162,7 @@ public final class Constants {
     public static final double kRampRPSPerSec = GlobalConstants.kDefaultRampRate;
 
     public static final boolean kEnableStatorLimit = true;
-    public static final double kStatorLimitAmps = 60.0;
+    public static final double kStatorLimitAmps = 80.0;
   }
 
   // ===========================================================================
@@ -275,7 +275,7 @@ public final class Constants {
     public static final double kShooterA = 0.0;
 
     public static final boolean kShooterEnableStatorLimit = true;
-    public static final double kShooterStatorLimitAmps = 60.0;
+    public static final double kShooterStatorLimitAmps = 80.0;
 
     public static final double kShooterMaxRPS = 80.0;
     public static final double kShooterRampRPSPerSec = GlobalConstants.kDefaultRampRate;
