@@ -193,14 +193,14 @@ public final class Constants {
     /** Acceleration Gain: Extra "kick" of voltage when speeding up. */
     public static final double kA = 0.0;
 
-    public static final double kMaxRPS = 60.0;
-    public static final double kFeedInRPS = 25.0;
+    public static final double kMaxRPS = 80.0;
+    public static final double kFeedInRPS = 80.0;
     public static final double kFeedOutRPS = -25.0;
 
     public static final double kRampRPSPerSec = GlobalConstants.kDefaultRampRate;
 
     public static final boolean kEnableStatorLimit = true;
-    public static final double kStatorLimitAmps = 40.0;
+    public static final double kStatorLimitAmps = 80.0;
   }
 
   // ===========================================================================
@@ -225,7 +225,7 @@ public final class Constants {
      * Proportional Gain: Keeps the motor at the correct speed while feeding the
      * launcher.
      */
-    public static final double kP = 0.10;
+    public static final double kP = 0.20;
     public static final double kI = 0.0;
     public static final double kD = 0.0;
 
@@ -237,13 +237,13 @@ public final class Constants {
     public static final double kA = 0.0;
 
     public static final double kMaxRPS = 90.0;
-    public static final double kFeedInRPS = 80.0;
-    public static final double kFeedOutRPS = -25.0;
+    public static final double kFeedInRPS = 25.0;
+    public static final double kFeedOutRPS = -80.0;
 
     public static final double kRampRPSPerSec = GlobalConstants.kDefaultRampRate;
 
     public static final boolean kEnableStatorLimit = true;
-    public static final double kStatorLimitAmps = 40.0;
+    public static final double kStatorLimitAmps = 80.0;
   }
 
   // ===========================================================================

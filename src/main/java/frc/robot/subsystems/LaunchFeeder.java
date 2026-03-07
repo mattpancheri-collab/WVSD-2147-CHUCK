@@ -158,24 +158,25 @@ public class LaunchFeeder extends SubsystemBase {
 
     if (voltageOverride) {
       motor.setVoltage(voltageDemand);
-
-      // DEBUG: print ~5x/sec
-      debugCounter++;
-      if (debugCounter % 10 == 0) {
-        System.out.println("[LaunchFeeder] demand=" + voltageDemand
-            + " applied=" + motor.getMotorVoltage().getValueAsDouble()
-            + " current=" + motor.getStatorCurrent().getValueAsDouble());
-
-        System.out.println("[LaunchFeeder] enabled=" + edu.wpi.first.wpilibj.DriverStation.isEnabled()
-            + " brownout=" + edu.wpi.first.wpilibj.RobotController.isBrownedOut()
-            + " batt=" + edu.wpi.first.wpilibj.RobotController.getBatteryVoltage());
-
-      }
-      return;
+    } else {
+      double limitedRps = rpsLimiter.calculate(targetRps);
+      motor.setControl(velocityRequest.withVelocity(limitedRps));
     }
 
-    double limitedRps = rpsLimiter.calculate(targetRps);
-    motor.setControl(velocityRequest.withVelocity(limitedRps));
+    // DEBUG: print ~5x/sec
+    debugCounter++;
+    if (debugCounter % 10 == 0) {
+      System.out.println("[LaunchFeeder] mode=" + (voltageOverride ? "VOLTS" : "RPS")
+          + " target=" + (voltageOverride ? voltageDemand : targetRps)
+          + " actual_rps=" + motor.getVelocity().getValueAsDouble()
+          + " applied_volts=" + motor.getMotorVoltage().getValueAsDouble()
+          + " current=" + motor.getStatorCurrent().getValueAsDouble());
+
+      if (debugCounter % 50 == 0) { // System health every 1s
+        System.out.println("[LaunchFeeder] batt=" + edu.wpi.first.wpilibj.RobotController.getBatteryVoltage()
+            + " brownout=" + edu.wpi.first.wpilibj.RobotController.isBrownedOut());
+      }
+    }
   }
 
   // COMMANDS

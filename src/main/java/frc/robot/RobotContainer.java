@@ -153,6 +153,7 @@ public class RobotContainer {
 
                 // Start Button: Climber Control
                 driverJoystick.start().whileTrue(ClimbFactory.climbCommand(climber));
+                driverJoystick.y().whileTrue(launchFeeder.feederOutCommand());
 
                 // driverJoystick.b().onTrue(launcher.setHoodDegreesCommand(Constants.LauncherConstants.kHoodAngle1));
                 // driverJoystick.x().onTrue(launcher.setHoodDegreesCommand(Constants.LauncherConstants.kHoodAngle2));
