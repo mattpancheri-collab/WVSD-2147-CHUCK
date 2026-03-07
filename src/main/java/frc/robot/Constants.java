@@ -107,7 +107,7 @@ public final class Constants {
 
     public static final double kGearRatio = 100.0;
 
-    public static final double kIntakeAngleDeg = 40.0;
+    public static final double kIntakeAngleDeg = 45.0;
     public static final double kIdleAngleDeg = -5.0;
 
     /* --- PID TUNING: Controls the Arm Movement --- */
@@ -236,8 +236,8 @@ public final class Constants {
     /** Acceleration Gain: Extra power during speed transitions. */
     public static final double kA = 0.0;
 
-    public static final double kMaxRPS = 60.0;
-    public static final double kFeedInRPS = 25.0;
+    public static final double kMaxRPS = 90.0;
+    public static final double kFeedInRPS = 80.0;
     public static final double kFeedOutRPS = -25.0;
 
     public static final double kRampRPSPerSec = GlobalConstants.kDefaultRampRate;
