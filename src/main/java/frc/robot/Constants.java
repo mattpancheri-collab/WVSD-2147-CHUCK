@@ -34,7 +34,7 @@ public final class Constants {
     public static final double kLaunchFeederVolts = 12.0;
 
     // Delay before feeders start (seconds)
-    public static final double kShooterSpinUpSeconds = 2.0;
+    public static final double kShooterSpinUpSeconds = 0.5;
   }
 
   // ===========================================================================
@@ -74,6 +74,7 @@ public final class Constants {
 
     // Feeders
     public static final int kLaunchFeederID = 13;
+    public static final int kLaunchFeederFollower1ID = 19;
     public static final int kFloorFeederID = 14;
 
     // Intake
@@ -108,7 +109,7 @@ public final class Constants {
     public static final double kGearRatio = 100.0;
 
     public static final double kIntakeAngleDeg = 45.0;
-    public static final double kIdleAngleDeg = -5.0;
+    public static final double kIdleAngleDeg = 0.0;
 
     /* --- PID TUNING: Controls the Arm Movement --- */
     /**
@@ -131,7 +132,8 @@ public final class Constants {
     public static final double kRampRPSPerSec = 42.0;
 
     public static final boolean kEnableStatorLimit = true;
-    public static final double kStatorLimitAmps = 80.0;
+    public static final double kStatorLimitAmpsUp = 80.0;
+    public static final double kStatorLimitAmpsDown = 30.0;
   }
 
   // ===========================================================================

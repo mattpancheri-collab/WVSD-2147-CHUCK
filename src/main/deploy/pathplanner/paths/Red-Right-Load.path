@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 13.166583333333334,
-        "y": 5.618472222222222
+        "x": 13.028537037037038,
+        "y": 7.32375
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.496175925925925,
-        "y": 4.725231481481481
+        "x": 14.028537037037037,
+        "y": 7.32375
       },
       "isLocked": false,
-      "linkedName": "Red-Top-Start"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 8.93587037037037,
-        "y": 7.31562962962963
+        "x": 15.838185185185186,
+        "y": 7.32375
       },
       "prevControl": {
-        "x": 11.08776851851852,
-        "y": 7.136981481481481
+        "x": 14.838185185185186,
+        "y": 7.32375
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Red-Top-Mid-Intake"
+      "linkedName": "Red-Right-Load"
     }
   ],
   "rotationTargets": [],
@@ -33,7 +33,7 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
+    "maxVelocity": 4.3,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -89.4270613023165
+    "rotation": -0.9240453527727454
   },
   "reversed": false,
-  "folder": "Red Right Path (Half Run)",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -128.9667469937993
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }

@@ -133,31 +133,25 @@ public class RobotContainer {
                                                 .withVelocityY(-driverJoystick.getLeftX() * MaxSpeed)
                                                 .withRotationalRate(-driverJoystick.getRightX() * MaxAngularRate)));
 
-                // Right Bumper: Slow Driving Mode
-                driverJoystick.rightBumper().whileTrue(
-                                drivetrain.applyRequest(() -> slowDrive
-                                                .withVelocityX(-driverJoystick.getLeftY() * SlowMaxSpeed)
-                                                .withVelocityY(-driverJoystick.getLeftX() * SlowMaxSpeed)
-                                                .withRotationalRate(-driverJoystick.getRightX() * SlowMaxAngularRate)));
+                // Right Bumper: Launch Feeder Reverse
+                driverJoystick.rightBumper().whileTrue(launchFeeder.feederOutCommand());
 
                 // Triggers and Bumpers: Factory Commands
                 driverJoystick.leftTrigger().whileTrue(IntakeFactory.intakeOnlyCommand(intakeGround, intakePivot));
-                driverJoystick.rightTrigger()
+                driverJoystick.rightTrigger(0.1)
                                 .whileTrue(LauncherFactory.shootFeedVoltage(launcher, floorFeeder, launchFeeder, intakeGround));
 
                 driverJoystick.leftBumper()
-                                .onTrue(intakePivot.setAngleCommand(Constants.IntakePivotConstants.kIdleAngleDeg));
+                                .onTrue(intakePivot.pivotStowCommand());
 
                 // A Button: Gyro Reset (Seed to 180 if needed to fix inversion)
                 driverJoystick.a().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
                 // Start Button: Climber Control
                 driverJoystick.start().whileTrue(ClimbFactory.climbCommand(climber));
-                driverJoystick.y().whileTrue(launchFeeder.feederOutCommand());
-
-                // driverJoystick.b().onTrue(launcher.setHoodDegreesCommand(Constants.LauncherConstants.kHoodAngle1));
-                // driverJoystick.x().onTrue(launcher.setHoodDegreesCommand(Constants.LauncherConstants.kHoodAngle2));
-                // driverJoystick.y().onTrue(launcher.setHoodDegreesCommand(Constants.LauncherConstants.kHoodAngle3));
+                driverJoystick.b().onTrue(launcher.setHoodDegreesCommand(Constants.LauncherConstants.kHoodAngle1));
+                driverJoystick.x().onTrue(launcher.setHoodDegreesCommand(Constants.LauncherConstants.kHoodAngle2));
+                driverJoystick.y().onTrue(launcher.setHoodDegreesCommand(Constants.LauncherConstants.kHoodAngle3));
 
                 /*
                  * // --- Distance-Based Shot Framework (Commented Out) ---

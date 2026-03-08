@@ -149,8 +149,8 @@ public class Launcher extends SubsystemBase {
     m_controlMode = ControlMode.VELOCITY;
   }
 
-  /** Testing mode: open-loop volts on shooter (leader + both followers). */
   public void setVoltage(double volts) {
+    System.out.println("[Launcher] setVoltage: " + volts);
     shooterTargetRps = 0.0;
     shooterSetpointLimiter.reset(0.0);
 
@@ -228,9 +228,8 @@ public class Launcher extends SubsystemBase {
         break;
 
       case VOLTAGE:
+        // ONLY set voltage on the leader. Hardware followers handle the rest automatically!
         shooterLeader.setVoltage(shooterVoltageDemand);
-        shooterFollower1.setVoltage(shooterVoltageDemand);
-        shooterFollower2.setVoltage(shooterVoltageDemand);
         break;
 
       case STOPPED:

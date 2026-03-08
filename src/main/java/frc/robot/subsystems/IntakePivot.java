@@ -63,6 +63,8 @@ public class IntakePivot extends SubsystemBase {
   private final PositionVoltage positionRequest = new PositionVoltage(0).withSlot(0);
   private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
 
+  private final CurrentLimitsConfigs currentLimits = new CurrentLimitsConfigs();
+
   private final SlewRateLimiter rpsLimiter = new SlewRateLimiter(IntakePivotConstants.kRampRPSPerSec);
 
   // =========================================================================
@@ -102,12 +104,11 @@ public class IntakePivot extends SubsystemBase {
     slot0.kG = IntakePivotConstants.kG;
     slot0.GravityType = com.ctre.phoenix6.signals.GravityTypeValue.Arm_Cosine;
 
-    // Current limits
-    CurrentLimitsConfigs currentLimits = config.CurrentLimits;
+    // Current limits (Initial default is Up/Strong)
     currentLimits.StatorCurrentLimitEnable = IntakePivotConstants.kEnableStatorLimit;
-    currentLimits.StatorCurrentLimit = IntakePivotConstants.kStatorLimitAmps;
+    currentLimits.StatorCurrentLimit = IntakePivotConstants.kStatorLimitAmpsUp;
 
-    pivotMotor.getConfigurator().apply(config);
+    pivotMotor.getConfigurator().apply(config.withCurrentLimits(currentLimits));
   }
 
   // =========================================================================
@@ -116,11 +117,25 @@ public class IntakePivot extends SubsystemBase {
 
   /** Position mode: move pivot to an angle in degrees and hold it there. */
   public void setAngleDegrees(double deg) {
+    System.out.println("[IntakePivot] setAngleDegrees TARGET: " + deg);
     targetRps = 0.0;
     rpsLimiter.reset(0.0);
     voltageDemand = 0.0;
 
-    targetDeg = MathUtil.clamp(deg, -20.0, 100.0);
+    double currentPos = getPositionDeg();
+    double newTarget = MathUtil.clamp(deg, -20.0, 100.0);
+
+    // Dynamic Current Limit: If moving UP (towards 0), use 80A. If moving DOWN (towards 45+), use 30A.
+    double newLimit = (newTarget < currentPos) ? IntakePivotConstants.kStatorLimitAmpsUp
+        : IntakePivotConstants.kStatorLimitAmpsDown;
+
+    if (newLimit != currentLimits.StatorCurrentLimit) {
+      currentLimits.StatorCurrentLimit = newLimit;
+      pivotMotor.getConfigurator().apply(currentLimits);
+      System.out.println("[IntakePivot] Swapping current limit to: " + newLimit + " A");
+    }
+
+    targetDeg = newTarget;
 
     // Phoenix PositionVoltage uses "mechanism rotations" because we set
     // SensorToMechanismRatio.
@@ -148,6 +163,7 @@ public class IntakePivot extends SubsystemBase {
    * Testing mode: open-loop volts. periodic() applies voltageDemand each loop.
    */
   public void setVoltage(double volts) {
+    if (volts != 0.0) System.out.println("[IntakePivot] setVoltage: " + volts);
     targetRps = 0.0;
     rpsLimiter.reset(0.0);
 
@@ -206,6 +222,11 @@ public class IntakePivot extends SubsystemBase {
         // Re-apply position request in every loop to ensure robustness.
         double pivotRotations = targetDeg / 360.0;
         pivotMotor.setControl(positionRequest.withPosition(pivotRotations));
+        
+        // Log every 500ms
+        if (edu.wpi.first.wpilibj.Timer.getFPGATimestamp() % 0.5 < 0.02) {
+          System.out.println("[IntakePivot] POS: " + getPositionDeg() + " -> " + targetDeg);
+        }
         break;
 
       case VELOCITY:

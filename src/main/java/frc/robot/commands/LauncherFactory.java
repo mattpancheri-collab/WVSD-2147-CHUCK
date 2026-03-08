@@ -48,7 +48,9 @@ public final class LauncherFactory {
         intakeGround);
 
     return spinUpShooter.alongWith(
-        Commands.waitSeconds(kShooterSpinUpSeconds).andThen(runFeeders));
+        Commands.waitSeconds(kShooterSpinUpSeconds).andThen(runFeeders))
+        .beforeStarting(() -> System.out.println("[LauncherFactory] shooting command STARTING"))
+        .finallyDo((interrupted) -> System.out.println("[LauncherFactory] shooting command ENDED. Interrupted=" + interrupted));
   }
 
   private static double clamp(double volts) {
