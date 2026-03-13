@@ -20,6 +20,7 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -147,6 +148,7 @@ public class Launcher extends SubsystemBase {
 
   public void setVoltage(double volts) {
     System.out.println("[Launcher] setVoltage: " + volts);
+
     shooterTargetRps = 0.0;
     shooterFeedForwardVolts = 0.0;
     shooterSetpointLimiter.reset(0.0);
@@ -158,6 +160,10 @@ public class Launcher extends SubsystemBase {
   public void setHoodDegrees(double deg) {
     hoodTargetDeg = MathUtil.clamp(deg, kHoodMinDeg, kHoodMaxDeg);
     m_hoodActive = true;
+  }
+
+  public void disableHood() {
+    m_hoodActive = false;
   }
 
   public void stop() {
@@ -201,6 +207,26 @@ public class Launcher extends SubsystemBase {
     return Math.abs(getShooterErrorRps()) <= kShooterReadyToleranceRps;
   }
 
+  public double getShooterAppliedVolts() {
+    return shooterLeader.getMotorVoltage().getValueAsDouble();
+  }
+
+  public double getShooterSupplyCurrentAmps() {
+    return shooterLeader.getSupplyCurrent().getValueAsDouble();
+  }
+
+  public double getShooterStatorCurrentAmps() {
+    return shooterLeader.getStatorCurrent().getValueAsDouble();
+  }
+
+  public double getShooterFeedForwardVolts() {
+    return shooterFeedForwardVolts;
+  }
+
+  public String getControlModeName() {
+    return m_controlMode.name();
+  }
+
   public double getHoodTargetDeg() {
     return hoodTargetDeg;
   }
@@ -237,6 +263,22 @@ public class Launcher extends SubsystemBase {
     } else {
       hoodMotor.setVoltage(0.0);
     }
+
+    SmartDashboard.putNumber("Launcher/TargetRPS", shooterTargetRps);
+    SmartDashboard.putNumber("Launcher/ActualRPS", getShooterLeaderVelocityRps());
+    SmartDashboard.putNumber("Launcher/ErrorRPS", getShooterErrorRps());
+    SmartDashboard.putBoolean("Launcher/AtSpeed", shooterAtSpeed());
+
+    SmartDashboard.putNumber("Launcher/AppliedVolts", getShooterAppliedVolts());
+    SmartDashboard.putNumber("Launcher/FFVolts", getShooterFeedForwardVolts());
+    SmartDashboard.putNumber("Launcher/SupplyCurrentAmps", getShooterSupplyCurrentAmps());
+    SmartDashboard.putNumber("Launcher/StatorCurrentAmps", getShooterStatorCurrentAmps());
+
+    SmartDashboard.putString("Launcher/ControlMode", getControlModeName());
+
+    SmartDashboard.putNumber("Launcher/HoodTargetDeg", hoodTargetDeg);
+    SmartDashboard.putNumber("Launcher/HoodActualDeg", getHoodPositionDeg());
+    SmartDashboard.putBoolean("Launcher/HoodActive", m_hoodActive);
   }
 
   public Command stopCommand() {
@@ -253,6 +295,10 @@ public class Launcher extends SubsystemBase {
 
   public Command setHoodDegreesCommand(double deg) {
     return runOnce(() -> setHoodDegrees(deg));
+  }
+
+  public Command disableHoodCommand() {
+    return runOnce(this::disableHood);
   }
 
   public Command runShooterRpsCommand(double rps) {
