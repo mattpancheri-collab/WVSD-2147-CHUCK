@@ -258,33 +258,25 @@ public final class Constants {
     // CAN IDs are now in CANConstants (kShooterLeaderID, kShooterFollower1ID,
     // kShooterFollower2ID, kHoodID)
 
-    /* --- SHOOTER SPEED TUNING --- */
-    /**
-     * Proportional Gain: High speed correction. If wheels slow down too much on
-     * shot, increase this.
-     */
-    public static final double kShooterP = 0.10;
+    public static final double kShooterMaxRPS = 90.0;
+    public static final double kShooterIdleRPS = 10.0;
+    public static final double kShooterCloseRPS = 75.0;
+    public static final double kShooterFarRPS = 75.0;
+    public static final double kShooterRampRPSPerSec = 400.0;
+  
+    public static final double kShooterP = 0.25;
     public static final double kShooterI = 0.0;
     public static final double kShooterD = 0.0;
-
-    /** Static Gain: Voltage to overcome motor friction. */
-    public static final double kShooterS = 0.0;
-    /**
-     * Velocity Gain: Most important for shooter. Maps target RPS to base Voltage.
-     */
-    public static final double kShooterV = 0.0;
-    /** Acceleration Gain: Helps the shooter spin up faster. */
+  
+    public static final double kShooterS = 0.20;
+    public static final double kShooterV = 0.12;
     public static final double kShooterA = 0.0;
-
+  
     public static final boolean kShooterEnableStatorLimit = true;
-    public static final double kShooterStatorLimitAmps = 80.0;
-
-    public static final double kShooterMaxRPS = 80.0;
-    public static final double kShooterRampRPSPerSec = GlobalConstants.kDefaultRampRate;
-
-    public static final double kShooterIdleRPS = 10.0;
-    public static final double kShooterCloseRPS = 55.0;
-    public static final double kShooterFarRPS = 70.0;
+    public static final double kShooterStatorLimitAmps = 160.0;
+  
+    public static final double kShooterShotBoostVolts = 0.7;
+    public static final double kShooterReadyToleranceRps = 1.5;
 
     public static final double kHoodGearRatio = 100.0;
 
@@ -297,6 +289,10 @@ public final class Constants {
 
     /** Gravity Gain: Constant voltage to hold the hood up against its own weight. */
     public static final double kHoodG = 0.1;
+
+    public static final double kHoodS = 0.0;
+    public static final double kHoodV = 0.0;
+    public static final double kHoodA = 0.0;
 
     public static final boolean kHoodEnableStatorLimit = true;
     public static final double kHoodStatorLimitAmps = 15.0;

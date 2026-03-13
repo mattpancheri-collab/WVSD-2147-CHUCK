@@ -42,21 +42,24 @@ public class Launcher extends SubsystemBase {
 
   private ControlMode m_controlMode = ControlMode.STOPPED;
 
-  // Requests
   private final VelocityVoltage shooterLeaderRequest = new VelocityVoltage(0).withSlot(0);
   private final PositionVoltage hoodPositionRequest = new PositionVoltage(0).withSlot(0);
 
-  private final Follower follower1Request = new Follower(CANConstants.kShooterLeaderID, MotorAlignmentValue.Aligned);
+  private final Follower follower1Request =
+      new Follower(CANConstants.kShooterLeaderID, MotorAlignmentValue.Aligned);
 
-  private final Follower follower2Request = new Follower(CANConstants.kShooterLeaderID, MotorAlignmentValue.Opposed);
+  private final Follower follower2Request =
+      new Follower(CANConstants.kShooterLeaderID, MotorAlignmentValue.Opposed);
 
-  private final SlewRateLimiter shooterSetpointLimiter = new SlewRateLimiter(kShooterRampRPSPerSec);
+  private final SlewRateLimiter shooterSetpointLimiter =
+      new SlewRateLimiter(kShooterRampRPSPerSec);
 
-  // State targets
-  private double shooterTargetRps = 0.0;
-  private double hoodTargetDeg = 0.0; 
-  private boolean m_hoodActive = false; // Prevents movement on enable until commanded
+  private double shooterTargetRps = 0.0; // always stored positive
   private double shooterVoltageDemand = 0.0;
+  private double shooterFeedForwardVolts = 0.0;
+
+  private double hoodTargetDeg = 38.0;
+  private boolean m_hoodActive = false;
 
   public Launcher() {
     configureShooterLeader();
@@ -64,27 +67,17 @@ public class Launcher extends SubsystemBase {
     configureShooterFollower(shooterFollower2);
     configureHood();
 
-    // latch followers once (also re-latched in periodic)
     shooterFollower1.setControl(follower1Request);
     shooterFollower2.setControl(follower2Request);
 
-    // Initial sync to prevent "shooting up" on first movement
-    syncHood();
     stop();
   }
-
-  // ---------------------------------------------------------------------------
-  // Config
-  // ---------------------------------------------------------------------------
 
   private void configureShooterLeader() {
     TalonFXConfiguration cfg = new TalonFXConfiguration();
 
     cfg.Feedback.SensorToMechanismRatio = 1.0;
-
     cfg.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-
-    // You verified in Phoenix Tuner that CW+ with +voltage is "correct".
     cfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
     Slot0Configs s0 = cfg.Slot0;
@@ -96,8 +89,10 @@ public class Launcher extends SubsystemBase {
     s0.kA = kShooterA;
 
     CurrentLimitsConfigs cl = cfg.CurrentLimits;
-    cl.StatorCurrentLimitEnable = kShooterEnableStatorLimit;
-    cl.StatorCurrentLimit = kShooterStatorLimitAmps;
+    cl.SupplyCurrentLimitEnable = true;
+    cl.SupplyCurrentLimit = 80.0;
+    cl.StatorCurrentLimitEnable = true;
+    cl.StatorCurrentLimit = 160.0;
 
     shooterLeader.getConfigurator().apply(cfg);
   }
@@ -105,6 +100,13 @@ public class Launcher extends SubsystemBase {
   private void configureShooterFollower(TalonFX motor) {
     TalonFXConfiguration cfg = new TalonFXConfiguration();
     cfg.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+
+    CurrentLimitsConfigs cl = cfg.CurrentLimits;
+    cl.SupplyCurrentLimitEnable = true;
+    cl.SupplyCurrentLimit = 80.0;
+    cl.StatorCurrentLimitEnable = true;
+    cl.StatorCurrentLimit = 160.0;
+
     motor.getConfigurator().apply(cfg);
   }
 
@@ -112,7 +114,6 @@ public class Launcher extends SubsystemBase {
     TalonFXConfiguration cfg = new TalonFXConfiguration();
 
     cfg.Feedback.SensorToMechanismRatio = kHoodGearRatio;
-
     cfg.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
@@ -121,7 +122,10 @@ public class Launcher extends SubsystemBase {
     s0.kI = kHoodI;
     s0.kD = kHoodD;
     s0.GravityType = GravityTypeValue.Arm_Cosine;
+    s0.kS = kHoodS;
     s0.kG = kHoodG;
+    s0.kV = kHoodV;
+    s0.kA = kHoodA;
 
     CurrentLimitsConfigs cl = cfg.CurrentLimits;
     cl.StatorCurrentLimitEnable = kHoodEnableStatorLimit;
@@ -130,31 +134,24 @@ public class Launcher extends SubsystemBase {
     hoodMotor.getConfigurator().apply(cfg);
   }
 
-  // ---------------------------------------------------------------------------
-  // Control API
-  // ---------------------------------------------------------------------------
-
-  /** Velocity mode (exits voltage override). */
   public void setShooterRps(double rps) {
+    setShooterRps(rps, 0.0);
+  }
+
+  public void setShooterRps(double rps, double extraFeedForwardVolts) {
     shooterVoltageDemand = 0.0;
-
-    // Apply polarity here so ALL setpoints match the same "forward"
-    double signedRps = kShooterPolarity * rps;
-
-    // Clamp to [0..max] because your shooter API expects "positive is shoot"
-    shooterTargetRps = MathUtil.clamp(signedRps, 0.0, kShooterMaxRPS);
-
+    shooterTargetRps = MathUtil.clamp(rps, 0.0, kShooterMaxRPS);
+    shooterFeedForwardVolts = MathUtil.clamp(extraFeedForwardVolts, -2.0, 2.0);
     m_controlMode = ControlMode.VELOCITY;
   }
 
   public void setVoltage(double volts) {
     System.out.println("[Launcher] setVoltage: " + volts);
     shooterTargetRps = 0.0;
+    shooterFeedForwardVolts = 0.0;
     shooterSetpointLimiter.reset(0.0);
 
-    // Apply polarity once, globally
     shooterVoltageDemand = MathUtil.clamp(kShooterPolarity * volts, -12.0, 12.0);
-
     m_controlMode = ControlMode.VOLTAGE;
   }
 
@@ -163,14 +160,10 @@ public class Launcher extends SubsystemBase {
     m_hoodActive = true;
   }
 
-  /** Force target to match current physical position (stops movement) */
-  public void syncHood() {
-    hoodTargetDeg = getHoodPositionDeg();
-  }
-
   public void stop() {
     shooterVoltageDemand = 0.0;
     shooterTargetRps = 0.0;
+    shooterFeedForwardVolts = 0.0;
     shooterSetpointLimiter.reset(0.0);
 
     shooterLeader.setVoltage(0.0);
@@ -192,16 +185,20 @@ public class Launcher extends SubsystemBase {
     setShooterRps(kShooterFarRPS);
   }
 
-  // ---------------------------------------------------------------------------
-  // Accessors
-  // ---------------------------------------------------------------------------
-
   public double getShooterTargetRps() {
     return shooterTargetRps;
   }
 
   public double getShooterLeaderVelocityRps() {
-    return shooterLeader.getVelocity().getValueAsDouble();
+    return Math.abs(shooterLeader.getVelocity().getValueAsDouble());
+  }
+
+  public double getShooterErrorRps() {
+    return shooterTargetRps - getShooterLeaderVelocityRps();
+  }
+
+  public boolean shooterAtSpeed() {
+    return Math.abs(getShooterErrorRps()) <= kShooterReadyToleranceRps;
   }
 
   public double getHoodTargetDeg() {
@@ -212,34 +209,28 @@ public class Launcher extends SubsystemBase {
     return hoodMotor.getPosition().getValueAsDouble() * 360.0;
   }
 
-  // ---------------------------------------------------------------------------
-  // Periodic
-  // ---------------------------------------------------------------------------
-
   @Override
   public void periodic() {
-    // keep followers latched
-    shooterFollower1.setControl(follower1Request);
-    shooterFollower2.setControl(follower2Request);
-
     switch (m_controlMode) {
       case VELOCITY:
-        double limitedRps = shooterSetpointLimiter.calculate(shooterTargetRps);
-        shooterLeader.setControl(shooterLeaderRequest.withVelocity(limitedRps));
+        double limitedSignedRps =
+            shooterSetpointLimiter.calculate(kShooterPolarity * shooterTargetRps);
+
+        shooterLeader.setControl(
+            shooterLeaderRequest
+                .withVelocity(limitedSignedRps)
+                .withFeedForward(shooterFeedForwardVolts));
         break;
 
       case VOLTAGE:
-        // ONLY set voltage on the leader. Hardware followers handle the rest automatically!
         shooterLeader.setVoltage(shooterVoltageDemand);
         break;
 
       case STOPPED:
       default:
-        // Already handled by stop() calls or startup
         break;
     }
 
-    // hood position-controlled only if active
     if (m_hoodActive) {
       double hoodRotations = hoodTargetDeg / 360.0;
       hoodMotor.setControl(hoodPositionRequest.withPosition(hoodRotations));
@@ -247,10 +238,6 @@ public class Launcher extends SubsystemBase {
       hoodMotor.setVoltage(0.0);
     }
   }
-
-  // ---------------------------------------------------------------------------
-  // Commands
-  // ---------------------------------------------------------------------------
 
   public Command stopCommand() {
     return runOnce(this::stop);
@@ -265,30 +252,20 @@ public class Launcher extends SubsystemBase {
   }
 
   public Command setHoodDegreesCommand(double deg) {
-    return Commands.runOnce(() -> setHoodDegrees(deg), this);
-  }
-
-  public Command syncHoodCommand() {
-    return Commands.runOnce(this::syncHood, this);
+    return runOnce(() -> setHoodDegrees(deg));
   }
 
   public Command runShooterRpsCommand(double rps) {
     return Commands.startEnd(
         () -> setShooterRps(rps),
-        () -> setShooterRps(0.0),
+        this::stop,
         this);
   }
-
 
   public Command runShooterVoltageCommand(double volts) {
     return Commands.startEnd(
         () -> setVoltage(volts),
-        () -> setVoltage(0.0),
+        this::stop,
         this);
   }
-
-  // ---------------------------------------------------------------------------
-  // Util
-  // ---------------------------------------------------------------------------
-
 }
