@@ -290,53 +290,24 @@ public final class Constants {
 
     /* --- HOOD ANGLE TUNING --- */
     /** Proportional Gain: Main power to move the hood to a specific angle. */
-    public static final double kHoodP = 30.0;
+    public static final double kHoodP = 2.0;
     public static final double kHoodI = 0.0;
     /** Derivative Gain: Dampens movement to prevent the hood from bouncing. */
     public static final double kHoodD = 0.5;
 
-    /** Static Gain: Voltage to overcome gearbox friction. */
-    public static final double kHoodS = 0.0;
-    /**
-     * Gravity Gain: Constant voltage to hold the hood up against its own weight.
-     */
-    public static final double kHoodG = 0.2;
-    /** Velocity Gain: Voltage required for steady movement. */
-    public static final double kHoodV = 0.0;
-    /** Acceleration Gain: Extra power to start moving. */
-    public static final double kHoodA = 0.0;
+    /** Gravity Gain: Constant voltage to hold the hood up against its own weight. */
+    public static final double kHoodG = 0.1;
 
     public static final boolean kHoodEnableStatorLimit = true;
-    public static final double kHoodStatorLimitAmps = 30.0;
-
-    public static final double kHoodMinDeg = 25.0;
-    public static final double kHoodMaxDeg = 60.0;
-
-    public static final double kHoodCloseDeg = 20.0;
-    public static final double kHoodFarDeg = 45.0;
+    public static final double kHoodStatorLimitAmps = 15.0;
+    public static final double kHoodMinDeg = 0.0;
+    public static final double kHoodMaxDeg = 250.0;
 
     // Custom Button Mappings (B, X, Y)
-    public static final double kHoodAngle1 = 38.0;
-    public static final double kHoodAngle2 = 30.0;
-    public static final double kHoodAngle3 = 45.0;
+    public static final double kHoodAngle1 = 221.1;
+    public static final double kHoodAngle2 = 0.0;
+    public static final double kHoodAngle3 = 72.4;
 
-    /*
-     * //
-     * ===========================================================================
-     * // DISTANCE-BASED SHOT FRAMEWORK (PRE-TUNED)
-     * //
-     * ===========================================================================
-     * public static final class DistanceShotConstants {
-     * public static final double kCloseRangeRps = 55.0;
-     * public static final double kCloseRangeDeg = 38.0;
-     * 
-     * public static final double kMidRangeRps = 65.0;
-     * public static final double kMidRangeDeg = 30.0;
-     * 
-     * public static final double kLongRangeRps = 75.0;
-     * public static final double kLongRangeDeg = 45.0;
-     * }
-     */
   }
 
   // ===========================================================================

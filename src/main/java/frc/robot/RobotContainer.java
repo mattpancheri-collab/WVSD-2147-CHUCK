@@ -153,18 +153,6 @@ public class RobotContainer {
                 driverJoystick.x().onTrue(launcher.setHoodDegreesCommand(Constants.LauncherConstants.kHoodAngle2));
                 driverJoystick.y().onTrue(launcher.setHoodDegreesCommand(Constants.LauncherConstants.kHoodAngle3));
 
-                /*
-                 * // --- Distance-Based Shot Framework (Commented Out) ---
-                 * driverJoystick.b().onTrue(launcher.distanceShotCommand(
-                 * Constants.LauncherConstants.DistanceShotConstants.kCloseRangeRps,
-                 * Constants.LauncherConstants.DistanceShotConstants.kCloseRangeDeg));
-                 * driverJoystick.x().onTrue(launcher.distanceShotCommand(
-                 * Constants.LauncherConstants.DistanceShotConstants.kMidRangeRps,
-                 * Constants.LauncherConstants.DistanceShotConstants.kMidRangeDeg));
-                 * driverJoystick.y().onTrue(launcher.distanceShotCommand(
-                 * Constants.LauncherConstants.DistanceShotConstants.kLongRangeRps,
-                 * Constants.LauncherConstants.DistanceShotConstants.kLongRangeDeg));
-                 */
 
                 // POV Buttons: Brake, Point, and Rotation
                 driverJoystick.povUp().whileTrue(drivetrain.applyRequest(

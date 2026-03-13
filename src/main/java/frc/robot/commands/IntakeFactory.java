@@ -11,8 +11,6 @@ import frc.robot.subsystems.LaunchFeeder;
 import edu.wpi.first.math.MathUtil;
 import frc.robot.Constants.IntakePivotConstants;
 import frc.robot.Constants.IntakeFloorConstants;
-//import frc.robot.Constants.FloorFeederConstants;
-//import frc.robot.Constants.LaunchFeederConstants;
 
 public final class IntakeFactory {
   private IntakeFactory() {
@@ -25,27 +23,6 @@ public final class IntakeFactory {
       LaunchFeeder launchFeeder) {
 
     final double intakeVolts = IntakeFloorConstants.kIntakeVolts;
-    /*
-     * // Pivot, FloorFeeder, and LaunchFeeder logic commented out to follow
-     * "Ground Roller Only" rule
-     * final double floorVolts = FloorFeederConstants.kIntakeVolts;
-     * final double launchVolts = LaunchFeederConstants.kIntakeVolts;
-     * 
-     * Command pivotCmd = Commands.startEnd(
-     * () -> intakePivot.setAngleDegrees(IntakePivotConstants.kIntakeAngleDeg),
-     * () -> { },
-     * intakePivot);
-     * 
-     * Command floorCmd = Commands.startEnd(
-     * () -> floorFeeder.setVoltage(+floorVolts),
-     * () -> floorFeeder.setVoltage(0.0),
-     * floorFeeder);
-     * 
-     * Command launchCmd = Commands.startEnd(
-     * () -> launchFeeder.setVoltage(+launchVolts),
-     * () -> launchFeeder.setVoltage(0.0),
-     * launchFeeder);
-     */
 
     Command intakeCmd = Commands.startEnd(
         () -> intakeGround.setVoltage(+intakeVolts),

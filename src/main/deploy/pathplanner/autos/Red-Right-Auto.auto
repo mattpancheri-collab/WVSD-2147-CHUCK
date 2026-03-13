@@ -5,21 +5,28 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": "Red-Right-Load"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "IntakeFactory"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 3.0
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Red-Right-Load"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "IntakeFactory"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 2.0
+                }
+              }
+            ]
           }
         },
         {

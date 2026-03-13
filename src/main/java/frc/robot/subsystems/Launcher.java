@@ -54,7 +54,7 @@ public class Launcher extends SubsystemBase {
 
   // State targets
   private double shooterTargetRps = 0.0;
-  private double hoodTargetDeg = 38.0; // Locked to Angle 1 for this week
+  private double hoodTargetDeg = 0.0; 
   private boolean m_hoodActive = false; // Prevents movement on enable until commanded
   private double shooterVoltageDemand = 0.0;
 
@@ -68,6 +68,8 @@ public class Launcher extends SubsystemBase {
     shooterFollower1.setControl(follower1Request);
     shooterFollower2.setControl(follower2Request);
 
+    // Initial sync to prevent "shooting up" on first movement
+    syncHood();
     stop();
   }
 
@@ -118,12 +120,8 @@ public class Launcher extends SubsystemBase {
     s0.kP = kHoodP;
     s0.kI = kHoodI;
     s0.kD = kHoodD;
-
     s0.GravityType = GravityTypeValue.Arm_Cosine;
-    s0.kS = kHoodS;
     s0.kG = kHoodG;
-    s0.kV = kHoodV;
-    s0.kA = kHoodA;
 
     CurrentLimitsConfigs cl = cfg.CurrentLimits;
     cl.StatorCurrentLimitEnable = kHoodEnableStatorLimit;
@@ -165,6 +163,11 @@ public class Launcher extends SubsystemBase {
     m_hoodActive = true;
   }
 
+  /** Force target to match current physical position (stops movement) */
+  public void syncHood() {
+    hoodTargetDeg = getHoodPositionDeg();
+  }
+
   public void stop() {
     shooterVoltageDemand = 0.0;
     shooterTargetRps = 0.0;
@@ -183,12 +186,10 @@ public class Launcher extends SubsystemBase {
 
   public void setCloseShot() {
     setShooterRps(kShooterCloseRPS);
-    // setHoodDegrees(kHoodCloseDeg); // Disabled for this week
   }
 
   public void setFarShot() {
     setShooterRps(kShooterFarRPS);
-    // setHoodDegrees(kHoodFarDeg); // Disabled for this week
   }
 
   // ---------------------------------------------------------------------------
@@ -264,7 +265,11 @@ public class Launcher extends SubsystemBase {
   }
 
   public Command setHoodDegreesCommand(double deg) {
-    return runOnce(() -> setHoodDegrees(deg));
+    return Commands.runOnce(() -> setHoodDegrees(deg), this);
+  }
+
+  public Command syncHoodCommand() {
+    return Commands.runOnce(this::syncHood, this);
   }
 
   public Command runShooterRpsCommand(double rps) {
@@ -274,16 +279,6 @@ public class Launcher extends SubsystemBase {
         this);
   }
 
-  /*
-   * public void setDistanceShot(double rps, double deg) {
-   * setShooterRps(rps);
-   * setHoodDegrees(deg);
-   * }
-   * 
-   * public Command distanceShotCommand(double rps, double deg) {
-   * return runOnce(() -> setDistanceShot(rps, deg));
-   * }
-   */
 
   public Command runShooterVoltageCommand(double volts) {
     return Commands.startEnd(
