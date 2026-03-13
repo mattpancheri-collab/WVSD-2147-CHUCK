@@ -85,7 +85,9 @@ public final class Constants {
     public static final int kClimberID = 17;
 
     // Sensors
-    public static final int kCANrangeID = 30;
+    public static final int kCANrangeID = 31;
+    public static final int kHoodRangeID = 30;
+
   }
 
   // ===========================================================================

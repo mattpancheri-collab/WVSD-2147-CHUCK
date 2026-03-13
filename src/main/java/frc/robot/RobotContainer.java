@@ -81,29 +81,16 @@ public class RobotContainer {
                 registerNamedCommands();
                 configureBindings();
 
-                // ---------------------------------------------------------------------------
-                // PATHPLANNER AUTO CHOOSER
-                // ---------------------------------------------------------------------------
-                // AutoBuilder automatically finds all autonomous routines created in the
-                // PathPlanner GUI and builds a SendableChooser. By putting it on the
-                // SmartDashboard, drivers can select the desired auto on the driver station.
                 autoChooser = AutoBuilder.buildAutoChooser();
                 SmartDashboard.putData("Auto Chooser", autoChooser);
         }
 
         private void registerNamedCommands() {
-                // ---------------------------------------------------------------------------
-                // PATHPLANNER NAMED COMMANDS
-                // ---------------------------------------------------------------------------
-                // Register Named Commands here so PathPlanner can trigger them during auto.
-                // The first argument (e.g. "Intake") MUST perfectly match the string used in
-                // the PathPlanner GUI. The second argument is the WPILib Command to run.
-
                 NamedCommands.registerCommand("IntakeFactory",
                                 IntakeFactory.intakeOnlyCommand(intakeGround, intakePivot));
 
                 NamedCommands.registerCommand("LauncherFactory",
-                                LauncherFactory.shootFeedVoltage(launcher, floorFeeder, launchFeeder, intakeGround));
+                                LauncherFactory.shootFeedVelocity(launcher, floorFeeder, launchFeeder, intakeGround));
 
                 NamedCommands.registerCommand("Stow",
                                 intakePivot.runOnce(() -> intakePivot
@@ -139,12 +126,12 @@ public class RobotContainer {
                 // Triggers and Bumpers: Factory Commands
                 driverJoystick.leftTrigger().whileTrue(IntakeFactory.intakeOnlyCommand(intakeGround, intakePivot));
                 driverJoystick.rightTrigger(0.1)
-                                .whileTrue(LauncherFactory.shootFeedVoltage(launcher, floorFeeder, launchFeeder, intakeGround));
+                                .whileTrue(LauncherFactory.shootFeedVelocity(launcher, floorFeeder, launchFeeder, intakeGround));
 
                 driverJoystick.leftBumper()
                                 .onTrue(intakePivot.pivotStowCommand());
 
-                // A Button: Gyro Reset (Seed to 180 if needed to fix inversion)
+                // A Button: Gyro Reset
                 driverJoystick.a().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
                 // Start Button: Climber Control
@@ -153,25 +140,21 @@ public class RobotContainer {
                 driverJoystick.x().onTrue(launcher.setHoodDegreesCommand(Constants.LauncherConstants.kHoodAngle2));
                 driverJoystick.y().onTrue(launcher.setHoodDegreesCommand(Constants.LauncherConstants.kHoodAngle3));
 
-
                 // POV Buttons: Brake, Point, and Rotation
                 driverJoystick.povUp().whileTrue(drivetrain.applyRequest(
-                                () -> point.withModuleDirection(new edu.wpi.first.math.geometry.Rotation2d(0)))); // Point
-                                                                                                                  // forward
-                driverJoystick.povDown().whileTrue(drivetrain.applyRequest(() -> brake)); // X-pattern Brake
+                                () -> point.withModuleDirection(new edu.wpi.first.math.geometry.Rotation2d(0))));
+                driverJoystick.povDown().whileTrue(drivetrain.applyRequest(() -> brake));
                 driverJoystick.povLeft().whileTrue(drivetrain.applyRequest(() -> drive.withVelocityX(0).withVelocityY(0)
-                                .withRotationalRate(-0.5 * MaxAngularRate))); // Rotate CCW (physically corrected)
+                                .withRotationalRate(-0.5 * MaxAngularRate)));
                 driverJoystick.povRight().whileTrue(drivetrain.applyRequest(() -> drive.withVelocityX(0)
-                                .withVelocityY(0).withRotationalRate(0.5 * MaxAngularRate))); // Rotate CW (physically
-                                                                                              // corrected)
+                                .withVelocityY(0).withRotationalRate(0.5 * MaxAngularRate)));
 
                 drivetrain.registerTelemetry(logger::telemeterize);
 
                 // =========================================================================
                 // OPERATOR
                 // =========================================================================
-                operatorJoystick.rightBumper().whileTrue(launcher.closeShotCommand());
-                operatorJoystick.leftBumper().whileTrue(launchFeeder.feederInCommand());
+                operatorJoystick.rightBumper().whileTrue(launcher.runShooterRpsCommand(Constants.LauncherConstants.kShooterCloseRPS));                operatorJoystick.leftBumper().whileTrue(launchFeeder.feederInCommand());
 
                 operatorJoystick.x().whileTrue(intakeGround.intakeInCommand());
                 operatorJoystick.b().whileTrue(intakeGround.intakeOutCommand());
@@ -248,7 +231,7 @@ public class RobotContainer {
                                                 intakePivot, intakeGround, floorFeeder, launchFeeder));
 
                 testingJoystick.rightBumper().whileTrue(
-                                LauncherFactory.shootFeedVoltage(
+                                LauncherFactory.shootFeedVelocity(
                                                 launcher, floorFeeder, launchFeeder, intakeGround));
         }
 

@@ -1,59 +1,71 @@
 package frc.robot.commands;
 
-import edu.wpi.first.math.MathUtil;
+import static frc.robot.Constants.IntakeFloorConstants.kIntakeVolts;
+import static frc.robot.Constants.LauncherConstants.kShooterCloseRPS;
+import static frc.robot.Constants.LauncherConstants.kShooterShotBoostVolts;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-
+import frc.robot.Constants.FloorFeederConstants;
+import frc.robot.Constants.LaunchFeederConstants;
 import frc.robot.subsystems.FloorFeeder;
+import frc.robot.subsystems.IntakeGround;
 import frc.robot.subsystems.LaunchFeeder;
 import frc.robot.subsystems.Launcher;
-import frc.robot.subsystems.IntakeGround;
-
-import static frc.robot.Constants.ShootingConstants.*;
 
 public final class LauncherFactory {
-  private LauncherFactory() {
-  }
+  private LauncherFactory() {}
 
-  public static Command shootFeedVoltage(
+  public static Command shootFeedVelocity(
       Launcher launcher,
       FloorFeeder floorFeeder,
       LaunchFeeder launchFeeder,
       IntakeGround intakeGround) {
 
-    final double shooterVolts = clamp(kShooterVolts);
-    final double floorFeederVolts = clamp(kFloorFeederVolts);
-    final double launchFeederVolts = clamp(kLaunchFeederVolts);
-    final double intakeVolts = frc.robot.Constants.IntakeFloorConstants.kIntakeVolts;
+    final double shooterRps = kShooterCloseRPS;
 
-    Command spinUpShooter = Commands.startEnd(
-        () -> launcher.setVoltage(shooterVolts),
-        () -> launcher.setVoltage(0.0),
+    final double floorFeederFullRps = FloorFeederConstants.kFeedInRPS;
+    final double floorFeederSlowRps = FloorFeederConstants.kFeedInRPS * 0.25;
+
+    final double launchFeederFullRps = LaunchFeederConstants.kFeedInRPS;
+    final double launchFeederSlowRps = LaunchFeederConstants.kFeedInRPS * 0.25;
+
+    final double intakeFullVolts = kIntakeVolts;
+    final double intakeSlowVolts = kIntakeVolts * 0.25;
+
+    Command shooterCommand = Commands.run(
+        () -> {
+          if (launcher.shooterAtSpeed()) {
+            launcher.setShooterRps(shooterRps, kShooterShotBoostVolts);
+          } else {
+            launcher.setShooterRps(shooterRps, 0.0);
+          }
+        },
         launcher);
 
-    Command runFeeders = Commands.startEnd(
+    Command feedCommand = Commands.run(
         () -> {
-          floorFeeder.setVoltage(floorFeederVolts);
-          launchFeeder.setVoltage(launchFeederVolts);
-          intakeGround.setVoltage(intakeVolts);
+          if (launcher.shooterAtSpeed()) {
+            floorFeeder.setRps(floorFeederFullRps);
+            launchFeeder.setRps(launchFeederFullRps);
+            intakeGround.setVoltage(intakeFullVolts);
+          } else {
+            floorFeeder.setRps(floorFeederSlowRps);
+            launchFeeder.setRps(launchFeederSlowRps);
+            intakeGround.setVoltage(intakeSlowVolts);
+          }
         },
-        () -> {
-          floorFeeder.setVoltage(0.0);
-          launchFeeder.setVoltage(0.0);
+        floorFeeder, launchFeeder, intakeGround);
+
+    return shooterCommand
+        .alongWith(feedCommand)
+        .beforeStarting(() -> System.out.println("[LauncherFactory] shootFeedVelocity STARTING"))
+        .finallyDo(interrupted -> {
+          launcher.stop();
+          floorFeeder.stop();
+          launchFeeder.stop();
           intakeGround.setVoltage(0.0);
-        },
-        floorFeeder,
-        launchFeeder,
-        intakeGround);
-
-    return spinUpShooter.alongWith(
-        Commands.waitSeconds(kShooterSpinUpSeconds).andThen(runFeeders))
-        .beforeStarting(() -> System.out.println("[LauncherFactory] shooting command STARTING"))
-        .finallyDo((interrupted) -> System.out.println("[LauncherFactory] shooting command ENDED. Interrupted=" + interrupted));
-  }
-
-  private static double clamp(double volts) {
-    return MathUtil.clamp(volts, -kMaxVoltage, kMaxVoltage);
+          System.out.println("[LauncherFactory] shootFeedVelocity ENDED interrupted=" + interrupted);
+        });
   }
 }
