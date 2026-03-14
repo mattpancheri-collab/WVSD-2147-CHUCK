@@ -1,279 +1,226 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
-
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.PositionVoltage;
-import com.ctre.phoenix6.controls.VelocityVoltage;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import frc.robot.Constants.IntakePivotConstants;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import frc.robot.Constants.BusConstants;
 import frc.robot.Constants.CANConstants;
+import frc.robot.Constants.IntakePivotConstants;
 
-/**
- * Intake Pivot subsystem:
- * - POSITION control for angles (0 deg = intake, 90 deg = idle).
- * - Voltage override mode for testing controller (open-loop volts).
- *
- * Notes:
- * - Angle setpoints are in DEGREES.
- * - Internally converted to motor rotations using kGearRatio.
- */
 public class IntakePivot extends SubsystemBase {
 
-  // =========================================================================
-  // CONTROL MODE
-  // =========================================================================
-
-  /**
-   * Tracks which control mode the pivot is currently in.
-   * Only ONE mode is active at a time — periodic() dispatches on this
-   * to ensure a single, unambiguous command reaches the motor each loop.
-   */
-  private enum ControlMode {
-    /**
-     * PID position control — setpoint already sent to motor in setAngleDegrees().
-     */
-    POSITION,
-    /** Closed-loop velocity control — periodic() applies the slew-limited RPS. */
-    VELOCITY,
-    /** Open-loop voltage (testing only) — periodic() applies voltageDemand. */
-    VOLTAGE,
-    /** Motor output is zero. */
-    STOPPED
-  }
-
-  // =========================================================================
-  // HARDWARE / INTERNALS
-  // =========================================================================
-
-  private final TalonFX pivotMotor = new TalonFX(CANConstants.kPivotID, BusConstants.kDefaultBus);
-
-  // Requests
-  private final PositionVoltage positionRequest = new PositionVoltage(0).withSlot(0);
-  private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
-
-  private final CurrentLimitsConfigs currentLimits = new CurrentLimitsConfigs();
-
-  private final SlewRateLimiter rpsLimiter = new SlewRateLimiter(IntakePivotConstants.kRampRPSPerSec);
-
-  // =========================================================================
-  // STATE
-  // =========================================================================
-
-  private ControlMode m_controlMode = ControlMode.STOPPED;
-
-  private double targetRps = 0.0;
-  private double targetDeg = IntakePivotConstants.kIdleAngleDeg;
-  private double voltageDemand = 0.0;
-
-  // =========================================================================
-  // CONSTRUCTOR
-  // =========================================================================
-
-  public IntakePivot() {
-    configureMotor();
-    // start at idle (90 deg)
-    setAngleDegrees(IntakePivotConstants.kIdleAngleDeg);
-  }
-
-  private void configureMotor() {
-    TalonFXConfiguration config = new TalonFXConfiguration();
-
-    // IMPORTANT: Use your real gear ratio (motor rotations per pivot rotation)
-    config.Feedback.SensorToMechanismRatio = IntakePivotConstants.kGearRatio;
-
-    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-
-    // Slot 0 PID for POSITION control
-    Slot0Configs slot0 = config.Slot0;
-    slot0.kP = IntakePivotConstants.kP;
-    slot0.kI = IntakePivotConstants.kI;
-    slot0.kD = IntakePivotConstants.kD;
-    slot0.kG = IntakePivotConstants.kG;
-    slot0.GravityType = com.ctre.phoenix6.signals.GravityTypeValue.Arm_Cosine;
-
-    // Current limits (Initial default is Up/Strong)
-    currentLimits.StatorCurrentLimitEnable = IntakePivotConstants.kEnableStatorLimit;
-    currentLimits.StatorCurrentLimit = IntakePivotConstants.kStatorLimitAmpsUp;
-
-    pivotMotor.getConfigurator().apply(config.withCurrentLimits(currentLimits));
-  }
-
-  // =========================================================================
-  // CONTROL API
-  // =========================================================================
-
-  /** Position mode: move pivot to an angle in degrees and hold it there. */
-  public void setAngleDegrees(double deg) {
-    System.out.println("[IntakePivot] setAngleDegrees TARGET: " + deg);
-    targetRps = 0.0;
-    rpsLimiter.reset(0.0);
-    voltageDemand = 0.0;
-
-    double currentPos = getPositionDeg();
-    double newTarget = MathUtil.clamp(deg, -20.0, 100.0);
-
-    // Dynamic Current Limit: If moving UP (towards 0), use 80A. If moving DOWN (towards 45+), use 30A.
-    double newLimit = (newTarget < currentPos) ? IntakePivotConstants.kStatorLimitAmpsUp
-        : IntakePivotConstants.kStatorLimitAmpsDown;
-
-    if (newLimit != currentLimits.StatorCurrentLimit) {
-      currentLimits.StatorCurrentLimit = newLimit;
-      pivotMotor.getConfigurator().apply(currentLimits);
-      System.out.println("[IntakePivot] Swapping current limit to: " + newLimit + " A");
+    private enum ControlMode {
+        POSITION,
+        VELOCITY,
+        VOLTAGE,
+        STOPPED
     }
 
-    targetDeg = newTarget;
+    private final TalonFX pivotMotor =
+        new TalonFX(CANConstants.kPivotID, BusConstants.kDefaultBus);
 
-    // Phoenix PositionVoltage uses "mechanism rotations" because we set
-    // SensorToMechanismRatio.
-    // Mechanism rotations = degrees / 360
-    double pivotRotations = targetDeg / 360.0;
-    pivotMotor.setControl(positionRequest.withPosition(pivotRotations));
+    private final TalonFX pivotFollower =
+        new TalonFX(CANConstants.kPivotFollowerID, BusConstants.kDefaultBus);
 
-    m_controlMode = ControlMode.POSITION;
-  }
+    private final Follower pivotFollowerRequest =
+        new Follower(CANConstants.kPivotID, MotorAlignmentValue.Opposed);
 
-  /**
-   * Velocity mode (closed-loop RPS). periodic() applies the slew-limited
-   * setpoint.
-   */
-  public void setRps(double rps) {
-    voltageDemand = 0.0;
+    private final PositionVoltage positionRequest = new PositionVoltage(0).withSlot(0);
+    private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
+    private final CurrentLimitsConfigs currentLimits = new CurrentLimitsConfigs();
+    private final SlewRateLimiter rpsLimiter =
+        new SlewRateLimiter(IntakePivotConstants.kRampRPSPerSec);
 
-    final double maxRps = IntakePivotConstants.kMaxVelocityRPS;
-    targetRps = MathUtil.clamp(rps, -maxRps, maxRps);
+    private ControlMode m_controlMode = ControlMode.STOPPED;
+    private double targetRps = 0.0;
+    private double targetDeg = IntakePivotConstants.kIdleAngleDeg;
+    private double voltageDemand = 0.0;
 
-    m_controlMode = ControlMode.VELOCITY;
-  }
+    public IntakePivot() {
+        configureLeader();
+        configureFollower();
 
-  /**
-   * Testing mode: open-loop volts. periodic() applies voltageDemand each loop.
-   */
-  public void setVoltage(double volts) {
-    if (volts != 0.0) System.out.println("[IntakePivot] setVoltage: " + volts);
-    targetRps = 0.0;
-    rpsLimiter.reset(0.0);
+        // Latch follower once at startup
+        pivotFollower.setControl(pivotFollowerRequest);
 
-    voltageDemand = MathUtil.clamp(volts, -12.0, 12.0);
+        // Start at idle
+        setAngleDegrees(IntakePivotConstants.kIdleAngleDeg);
+    }
 
-    m_controlMode = ControlMode.VOLTAGE;
-  }
+    private void configureLeader() {
+        TalonFXConfiguration config = new TalonFXConfiguration();
 
-  /** Stop all pivot output. */
-  public void stop() {
-    targetRps = 0.0;
-    rpsLimiter.reset(0.0);
-    voltageDemand = 0.0;
+        config.Feedback.SensorToMechanismRatio = IntakePivotConstants.kGearRatio;
+        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
-    pivotMotor.setVoltage(0.0);
-    m_controlMode = ControlMode.STOPPED;
-  }
+        Slot0Configs slot0 = config.Slot0;
+        slot0.kP = IntakePivotConstants.kP;
+        slot0.kI = IntakePivotConstants.kI;
+        slot0.kD = IntakePivotConstants.kD;
+        slot0.kG = IntakePivotConstants.kG;
+        slot0.GravityType = GravityTypeValue.Arm_Cosine;
 
-  // Convenience helpers
-  public void deploy() {
-    setAngleDegrees(IntakePivotConstants.kIntakeAngleDeg);
-  }
+        currentLimits.StatorCurrentLimitEnable = IntakePivotConstants.kEnableStatorLimit;
+        currentLimits.StatorCurrentLimit = IntakePivotConstants.kStatorLimitAmpsUp;
 
-  public void stow() {
-    setAngleDegrees(IntakePivotConstants.kIdleAngleDeg);
-  }
+        pivotMotor.getConfigurator().apply(config);
+        pivotMotor.getConfigurator().apply(currentLimits);
+    }
 
-  // =========================================================================
-  // ACCESSORS
-  // =========================================================================
+    private void configureFollower() {
+        TalonFXConfiguration config = new TalonFXConfiguration();
+        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-  public double getTargetDeg() {
-    return targetDeg;
-  }
+        pivotFollower.getConfigurator().apply(config);
+        pivotFollower.getConfigurator().apply(currentLimits);
+    }
 
-  public double getPositionDeg() {
-    return pivotMotor.getPosition().getValueAsDouble() * 360.0; // mechanism rotations -> degrees
-  }
+    public void setAngleDegrees(double deg) {
+        System.out.println("[IntakePivot] setAngleDegrees TARGET: " + deg);
 
-  public boolean isVoltageOverride() {
-    return m_controlMode == ControlMode.VOLTAGE;
-  }
+        targetRps = 0.0;
+        rpsLimiter.reset(0.0);
+        voltageDemand = 0.0;
 
-  public double getVoltageDemand() {
-    return voltageDemand;
-  }
+        double currentPos = getPositionDeg();
+        double newTarget = MathUtil.clamp(deg, -20.0, 100.0);
 
-  // =========================================================================
-  // PERIODIC
-  // =========================================================================
+        double newLimit = (newTarget < currentPos)
+            ? IntakePivotConstants.kStatorLimitAmpsUp
+            : IntakePivotConstants.kStatorLimitAmpsDown;
 
-  @Override
-  public void periodic() {
-    switch (m_controlMode) {
-      case POSITION:
-        // Re-apply position request in every loop to ensure robustness.
+        if (newLimit != currentLimits.StatorCurrentLimit) {
+            currentLimits.StatorCurrentLimit = newLimit;
+            pivotMotor.getConfigurator().apply(currentLimits);
+            pivotFollower.getConfigurator().apply(currentLimits);
+            System.out.println("[IntakePivot] Swapping current limit to: " + newLimit + " A");
+        }
+
+        targetDeg = newTarget;
         double pivotRotations = targetDeg / 360.0;
         pivotMotor.setControl(positionRequest.withPosition(pivotRotations));
-        
-        // Log every 500ms
-        if (edu.wpi.first.wpilibj.Timer.getFPGATimestamp() % 0.5 < 0.02) {
-          System.out.println("[IntakePivot] POS: " + getPositionDeg() + " -> " + targetDeg);
-        }
-        break;
-
-      case VELOCITY:
-        double limitedRps = rpsLimiter.calculate(targetRps);
-        pivotMotor.setControl(velocityRequest.withVelocity(limitedRps));
-        break;
-
-      case VOLTAGE:
-        pivotMotor.setVoltage(voltageDemand);
-        break;
-
-      case STOPPED:
-      default:
-        // Motor output is already zero (set in stop()).
-        break;
+        m_controlMode = ControlMode.POSITION;
     }
-  }
 
-  // =========================================================================
-  // COMMANDS
-  // =========================================================================
+    public void setRps(double rps) {
+        voltageDemand = 0.0;
+        double maxRps = IntakePivotConstants.kMaxVelocityRPS;
+        targetRps = MathUtil.clamp(rps, -maxRps, maxRps);
+        m_controlMode = ControlMode.VELOCITY;
+    }
 
-  /** While held, deploy to 90 degrees. On release, stow to 0 degrees. */
-  public Command deployWhileHeldStowOnReleaseCommand() {
-    return Commands.startEnd(this::deploy, this::stow, this);
-  }
+    public void setVoltage(double volts) {
+        if (volts != 0.0) {
+            System.out.println("[IntakePivot] setVoltage: " + volts);
+        }
 
-  public Command pivotDeployCommand() {
-    return run(this::deploy);
-  }
+        targetRps = 0.0;
+        rpsLimiter.reset(0.0);
+        voltageDemand = MathUtil.clamp(volts, -12.0, 12.0);
+        m_controlMode = ControlMode.VOLTAGE;
+    }
 
-  public Command pivotStowCommand() {
-    return run(this::stow);
-  }
+    public void stop() {
+        targetRps = 0.0;
+        rpsLimiter.reset(0.0);
+        voltageDemand = 0.0;
+        pivotMotor.setVoltage(0.0);
+        pivotFollower.setVoltage(0.0);
+        m_controlMode = ControlMode.STOPPED;
+    }
 
-  public Command setAngleCommand(double deg) {
-    return run(() -> setAngleDegrees(deg));
-  }
+    public void deploy() {
+        setAngleDegrees(IntakePivotConstants.kIntakeAngleDeg);
+    }
 
-  public Command pivotVoltageCommand(double volts) {
-    return Commands.startEnd(
-        () -> setVoltage(volts),
-        () -> setVoltage(0.0),
-        this);
-  }
+    public void stow() {
+        setAngleDegrees(IntakePivotConstants.kIdleAngleDeg);
+    }
 
-  public Command stopCommand() {
-    return runOnce(this::stop);
-  }
+    public double getTargetDeg() {
+        return targetDeg;
+    }
+
+    public double getPositionDeg() {
+        return pivotMotor.getPosition().getValueAsDouble() * 360.0;
+    }
+
+    public boolean isVoltageOverride() {
+        return m_controlMode == ControlMode.VOLTAGE;
+    }
+
+    public double getVoltageDemand() {
+        return voltageDemand;
+    }
+
+    @Override
+    public void periodic() {
+        // Re-latch follower every loop in case of reset/brownout
+        pivotFollower.setControl(pivotFollowerRequest);
+
+        switch (m_controlMode) {
+            case POSITION:
+                double pivotRotations = targetDeg / 360.0;
+                pivotMotor.setControl(positionRequest.withPosition(pivotRotations));
+
+                if (Timer.getFPGATimestamp() % 0.5 < 0.02) {
+                    System.out.println("[IntakePivot] POS: " + getPositionDeg() + " -> " + targetDeg);
+                }
+                break;
+
+            case VELOCITY:
+                double limitedRps = rpsLimiter.calculate(targetRps);
+                pivotMotor.setControl(velocityRequest.withVelocity(limitedRps));
+                break;
+
+            case VOLTAGE:
+                pivotMotor.setVoltage(voltageDemand);
+                break;
+
+            case STOPPED:
+            default:
+                break;
+        }
+    }
+
+    public Command deployWhileHeldStowOnReleaseCommand() {
+        return Commands.startEnd(this::deploy, this::stow, this);
+    }
+
+    public Command pivotDeployCommand() {
+        return run(this::deploy);
+    }
+
+    public Command pivotStowCommand() {
+        return run(this::stow);
+    }
+
+    public Command setAngleCommand(double deg) {
+        return run(() -> setAngleDegrees(deg));
+    }
+
+    public Command pivotVoltageCommand(double volts) {
+        return Commands.startEnd(() -> setVoltage(volts), () -> setVoltage(0.0), this);
+    }
+
+    public Command stopCommand() {
+        return runOnce(this::stop);
+    }
 }

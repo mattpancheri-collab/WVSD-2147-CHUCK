@@ -25,7 +25,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class LaunchFeeder extends SubsystemBase {
 
   private final TalonFX motor = new TalonFX(CANConstants.kLaunchFeederID, kDefaultBus);
-  private final TalonFX follower1 = new TalonFX(CANConstants.kLaunchFeederFollower1ID, kDefaultBus);
 
   private final com.ctre.phoenix6.controls.Follower follower1Request = new com.ctre.phoenix6.controls.Follower(CANConstants.kLaunchFeederID, MotorAlignmentValue.Opposed);
   private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
@@ -72,8 +71,7 @@ public class LaunchFeeder extends SubsystemBase {
 
     motor.getConfigurator().apply(config);
 
-    // Configure follower to match lead (Coast, Inverted, Current Limits)
-    follower1.getConfigurator().apply(config);
+
   }
 
   // SENSOR (CANrange)
@@ -128,7 +126,7 @@ public class LaunchFeeder extends SubsystemBase {
     rpsLimiter.reset(0.0);
 
     motor.setVoltage(0.0);
-    follower1.setVoltage(0.0);
+
   }
 
   // SIMPLE GETTERS
@@ -163,8 +161,6 @@ public class LaunchFeeder extends SubsystemBase {
       return;
     }
 
-    // Keep hardware follower latched
-    follower1.setControl(follower1Request);
 
     if (voltageOverride) {
       motor.setVoltage(voltageDemand);

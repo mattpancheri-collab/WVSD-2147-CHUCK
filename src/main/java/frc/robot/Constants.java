@@ -74,12 +74,13 @@ public final class Constants {
 
     // Feeders
     public static final int kLaunchFeederID = 13;
-    public static final int kLaunchFeederFollower1ID = 19;
     public static final int kFloorFeederID = 14;
 
     // Intake
     public static final int kPivotID = 15;
     public static final int kIntakeID = 16;
+    public static final int kPivotFollowerID = 19;
+
 
     // Climber
     public static final int kClimberID = 17;
@@ -279,7 +280,15 @@ public final class Constants {
   
     public static final double kShooterShotBoostVolts = 0.7;
     public static final double kShooterReadyToleranceRps = 1.5;
+    
+    public static final double kShooterFeedEnableErrorRps = 1.0;
+    public static final double kShooterFeedDisableErrorRps = 2.0;
+    
+    public static final double kShooterPreHitBoostVolts = 1.0;
+    public static final double kShooterPreHitBoostTimeSec = 0.06;
 
+    
+    
     public static final double kHoodGearRatio = 100.0;
 
     /* --- HOOD ANGLE TUNING --- */
