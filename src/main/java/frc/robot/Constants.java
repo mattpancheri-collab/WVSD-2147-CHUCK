@@ -56,7 +56,8 @@ public final class Constants {
   // CAN BUS
   // ===========================================================================
   public static final class BusConstants {
-    public static final com.ctre.phoenix6.CANBus kDefaultBus = new com.ctre.phoenix6.CANBus("rio");
+    public static final com.ctre.phoenix6.CANBus kDefaultBus =
+        new com.ctre.phoenix6.CANBus("rio");
   }
 
   // ===========================================================================
@@ -81,14 +82,12 @@ public final class Constants {
     public static final int kIntakeID = 16;
     public static final int kPivotFollowerID = 19;
 
-
     // Climber
     public static final int kClimberID = 17;
 
     // Sensors
     public static final int kCANrangeID = 31;
     public static final int kHoodRangeID = 30;
-
   }
 
   // ===========================================================================
@@ -108,26 +107,14 @@ public final class Constants {
     }
 
     // CAN ID is now in CANConstants.kPivotID
-
     public static final double kGearRatio = 100.0;
 
     public static final double kIntakeAngleDeg = 45.0;
     public static final double kIdleAngleDeg = 0.0;
 
     /* --- PID TUNING: Controls the Arm Movement --- */
-    /**
-     * Proportional Gain: The "Strength". Higher = faster response, but more
-     * shaking.
-     */
     public static final double kP = 120.0;
-    /**
-     * Integral Gain: The "History". Builds power over time to reach the target
-     * exactly. Usually 0.
-     */
     public static final double kI = 0.0;
-    /**
-     * Derivative Gain: The "Brake". Smooths out the stopping to prevent bouncing.
-     */
     public static final double kD = 0.0;
     public static final double kG = 0.75;
 
@@ -150,14 +137,8 @@ public final class Constants {
     public static final double kIntakeVolts = 12.0;
 
     /* --- SPEED TUNING: Controls the Roller Speed --- */
-    /**
-     * Proportional Gain: High values help the motor stay at the set RPM when a ball
-     * hits it.
-     */
     public static final double kP = 0.10;
-    /** Integral Gain: Usually 0. */
     public static final double kI = 0.0;
-    /** Derivative Gain: Usually 0. */
     public static final double kD = 0.0;
 
     public static final double kMaxRPS = 60.0;
@@ -181,25 +162,16 @@ public final class Constants {
     public static final double kIntakeVolts = 12.0;
 
     /* --- PID & FEEDFORWARD TUNING: Controls Feed Speed --- */
-    /** Proportional Gain: Main correction power to stay at target speed. */
     public static final double kP = 0.10;
     public static final double kI = 0.0;
     public static final double kD = 0.0;
 
-    /**
-     * Static Gain: Minimum voltage to overcome friction and get the motor spinning.
-     */
     public static final double kS = 0.0;
-    /**
-     * Velocity Gain: Voltage required to maintain a specific speed (RPS). Main
-     * speed driver.
-     */
     public static final double kV = 0.12;
-    /** Acceleration Gain: Extra "kick" of voltage when speeding up. */
     public static final double kA = 0.0;
 
     public static final double kMaxRPS = 80.0;
-    public static final double kFeedInRPS = 80.0;
+    public static final double kFeedInRPS = 45.0;
     public static final double kFeedOutRPS = -25.0;
 
     public static final double kRampRPSPerSec = GlobalConstants.kDefaultRampRate;
@@ -226,23 +198,16 @@ public final class Constants {
     public static final boolean kAutoStopOnBall = true;
 
     /* --- PID & FEEDFORWARD TUNING: Controls Feed Speed --- */
-    /**
-     * Proportional Gain: Keeps the motor at the correct speed while feeding the
-     * launcher.
-     */
     public static final double kP = 0.20;
     public static final double kI = 0.0;
     public static final double kD = 0.0;
 
-    /** Static Gain: Voltage to break friction. */
     public static final double kS = 0.0;
-    /** Velocity Gain: Main driver for matching target RPS. */
     public static final double kV = 0.12;
-    /** Acceleration Gain: Extra power during speed transitions. */
     public static final double kA = 0.0;
 
     public static final double kMaxRPS = 90.0;
-    public static final double kFeedInRPS = 25.0;
+    public static final double kFeedInRPS = 26.0;
     public static final double kFeedOutRPS = -80.0;
 
     public static final double kRampRPSPerSec = GlobalConstants.kDefaultRampRate;
@@ -258,47 +223,39 @@ public final class Constants {
     private LauncherConstants() {
     }
 
-    // CAN IDs are now in CANConstants (kShooterLeaderID, kShooterFollower1ID,
-    // kShooterFollower2ID, kHoodID)
-
     public static final double kShooterMaxRPS = 90.0;
     public static final double kShooterIdleRPS = 10.0;
     public static final double kShooterCloseRPS = 75.0;
     public static final double kShooterFarRPS = 75.0;
-    public static final double kShooterRampRPSPerSec = 400.0;
-  
-    public static final double kShooterP = 0.25;
+    public static final double kShooterRampRPSPerSec = 300.0;
+
+    public static final double kShooterP = 0.28;
     public static final double kShooterI = 0.0;
     public static final double kShooterD = 0.0;
-  
+
     public static final double kShooterS = 0.20;
     public static final double kShooterV = 0.12;
     public static final double kShooterA = 0.0;
-  
+
     public static final boolean kShooterEnableStatorLimit = true;
     public static final double kShooterStatorLimitAmps = 160.0;
-  
-    public static final double kShooterShotBoostVolts = 0.7;
-    public static final double kShooterReadyToleranceRps = 1.5;
-    
-    public static final double kShooterFeedEnableErrorRps = 1.0;
-    public static final double kShooterFeedDisableErrorRps = 2.0;
-    
+
+    public static final double kShooterShotBoostVolts = 0.75;
+    public static final double kShooterReadyToleranceRps = 2.0;
+
+    public static final double kShooterFeedEnableErrorRps = 2.5;
+    public static final double kShooterFeedDisableErrorRps = 4.0;
+
     public static final double kShooterPreHitBoostVolts = 1.0;
     public static final double kShooterPreHitBoostTimeSec = 0.06;
 
-    
-    
     public static final double kHoodGearRatio = 100.0;
 
     /* --- HOOD ANGLE TUNING --- */
-    /** Proportional Gain: Main power to move the hood to a specific angle. */
     public static final double kHoodP = 2.0;
     public static final double kHoodI = 0.0;
-    /** Derivative Gain: Dampens movement to prevent the hood from bouncing. */
     public static final double kHoodD = 0.5;
 
-    /** Gravity Gain: Constant voltage to hold the hood up against its own weight. */
     public static final double kHoodG = 0.1;
 
     public static final double kHoodS = 0.0;
@@ -314,7 +271,6 @@ public final class Constants {
     public static final double kHoodAngle1 = 221.1;
     public static final double kHoodAngle2 = 0.0;
     public static final double kHoodAngle3 = 72.4;
-
   }
 
   // ===========================================================================
@@ -325,8 +281,6 @@ public final class Constants {
     }
 
     // CAN ID is now in CANConstants.kClimberID
-
-    // 100% output
     public static final double kClimbPower = 1.0;
     public static final double kClimbReversePower = -1.0;
 
