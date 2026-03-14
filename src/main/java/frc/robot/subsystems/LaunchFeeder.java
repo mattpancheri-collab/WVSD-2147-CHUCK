@@ -13,7 +13,6 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANrange;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.filter.Debouncer;
@@ -26,7 +25,6 @@ public class LaunchFeeder extends SubsystemBase {
 
   private final TalonFX motor = new TalonFX(CANConstants.kLaunchFeederID, kDefaultBus);
 
-  private final com.ctre.phoenix6.controls.Follower follower1Request = new com.ctre.phoenix6.controls.Follower(CANConstants.kLaunchFeederID, MotorAlignmentValue.Opposed);
   private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
 
   private final SlewRateLimiter rpsLimiter = new SlewRateLimiter(kRampRPSPerSec);
