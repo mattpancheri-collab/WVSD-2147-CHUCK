@@ -100,7 +100,6 @@ public class LaunchFeeder extends SubsystemBase {
   }
 
   public void setVoltage(double volts) {
-    System.out.println("[LaunchFeeder] setVoltage called: " + volts);
 
     voltageOverride = true;
     voltageDemand = MathUtil.clamp(volts, -12.0, 12.0);
@@ -154,21 +153,7 @@ public class LaunchFeeder extends SubsystemBase {
       motor.setControl(velocityRequest.withVelocity(limitedRps));
     }
 
-    debugCounter++;
-    if (debugCounter % 10 == 0) {
-      System.out.println(
-          "[LaunchFeeder] mode=" + (voltageOverride ? "VOLTS" : "RPS")
-              + " target=" + (voltageOverride ? voltageDemand : targetRps)
-              + " actual_rps=" + motor.getVelocity().getValueAsDouble()
-              + " applied_volts=" + motor.getMotorVoltage().getValueAsDouble()
-              + " current=" + motor.getStatorCurrent().getValueAsDouble());
 
-      if (debugCounter % 50 == 0) {
-        System.out.println(
-            "[LaunchFeeder] batt=" + RobotController.getBatteryVoltage()
-                + " brownout=" + RobotController.isBrownedOut());
-      }
-    }
   }
 
   public Command feedUntilBallCommand() {

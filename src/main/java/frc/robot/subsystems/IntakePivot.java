@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -93,8 +92,6 @@ public class IntakePivot extends SubsystemBase {
     }
 
     public void setAngleDegrees(double deg) {
-        System.out.println("[IntakePivot] setAngleDegrees TARGET: " + deg);
-
         targetRps = 0.0;
         rpsLimiter.reset(0.0);
         voltageDemand = 0.0;
@@ -110,7 +107,6 @@ public class IntakePivot extends SubsystemBase {
             currentLimits.StatorCurrentLimit = newLimit;
             pivotMotor.getConfigurator().apply(currentLimits);
             pivotFollower.getConfigurator().apply(currentLimits);
-            System.out.println("[IntakePivot] Swapping current limit to: " + newLimit + " A");
         }
 
         targetDeg = newTarget;
@@ -127,10 +123,6 @@ public class IntakePivot extends SubsystemBase {
     }
 
     public void setVoltage(double volts) {
-        if (volts != 0.0) {
-            System.out.println("[IntakePivot] setVoltage: " + volts);
-        }
-
         targetRps = 0.0;
         rpsLimiter.reset(0.0);
         voltageDemand = MathUtil.clamp(volts, -12.0, 12.0);
@@ -142,7 +134,6 @@ public class IntakePivot extends SubsystemBase {
         rpsLimiter.reset(0.0);
         voltageDemand = 0.0;
         pivotMotor.setVoltage(0.0);
-        pivotFollower.setVoltage(0.0);
         m_controlMode = ControlMode.STOPPED;
     }
 
@@ -172,17 +163,9 @@ public class IntakePivot extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // Re-latch follower every loop in case of reset/brownout
-        pivotFollower.setControl(pivotFollowerRequest);
-
         switch (m_controlMode) {
             case POSITION:
-                double pivotRotations = targetDeg / 360.0;
-                pivotMotor.setControl(positionRequest.withPosition(pivotRotations));
-
-                if (Timer.getFPGATimestamp() % 0.5 < 0.02) {
-                    System.out.println("[IntakePivot] POS: " + getPositionDeg() + " -> " + targetDeg);
-                }
+                // Do nothing here; setAngleDegrees() already sent the target
                 break;
 
             case VELOCITY:
@@ -213,7 +196,7 @@ public class IntakePivot extends SubsystemBase {
     }
 
     public Command setAngleCommand(double deg) {
-        return run(() -> setAngleDegrees(deg));
+        return runOnce(() -> setAngleDegrees(deg));
     }
 
     public Command pivotVoltageCommand(double volts) {

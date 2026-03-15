@@ -255,6 +255,7 @@ public final class Constants {
   
     public static final double kHoodGearRatio = 100.0;
   
+    public static final boolean kEnableHood = false;
     public static final double kHoodP = 2.0;
     public static final double kHoodI = 0.0;
     public static final double kHoodD = 0.5;

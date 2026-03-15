@@ -21,14 +21,13 @@ import frc.robot.Constants.CANConstants;
 
 public class IntakeGround extends SubsystemBase {
 
+  private static final double kEpsilon = 1e-4;
+
   private final TalonFX intakeMotor = new TalonFX(CANConstants.kIntakeID, BusConstants.kDefaultBus);
-
   private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
-
   private final SlewRateLimiter rpsLimiter = new SlewRateLimiter(IntakeFloorConstants.kRampRPSPerSec);
 
   private double targetRps = 0.0;
-
   private boolean voltageOverride = false;
   private double voltageDemand = 0.0;
 
@@ -41,7 +40,6 @@ public class IntakeGround extends SubsystemBase {
     TalonFXConfiguration config = new TalonFXConfiguration();
 
     config.Feedback.SensorToMechanismRatio = 1.0;
-
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
@@ -57,10 +55,6 @@ public class IntakeGround extends SubsystemBase {
     intakeMotor.getConfigurator().apply(config);
   }
 
-  // ---------------------------------------------------------------------------
-  // Control API
-  // ---------------------------------------------------------------------------
-
   public void intakeIn() {
     setRps(IntakeFloorConstants.kIntakeInRPS);
   }
@@ -72,14 +66,12 @@ public class IntakeGround extends SubsystemBase {
   public void setRps(double rps) {
     voltageOverride = false;
     voltageDemand = 0.0;
-
     targetRps = MathUtil.clamp(rps, -IntakeFloorConstants.kMaxRPS, IntakeFloorConstants.kMaxRPS);
   }
 
   public void setVoltage(double volts) {
     voltageOverride = true;
     voltageDemand = MathUtil.clamp(volts, -12.0, 12.0);
-
     targetRps = 0.0;
     rpsLimiter.reset(0.0);
   }
@@ -87,16 +79,10 @@ public class IntakeGround extends SubsystemBase {
   public void stop() {
     voltageOverride = false;
     voltageDemand = 0.0;
-
     targetRps = 0.0;
     rpsLimiter.reset(0.0);
-
     intakeMotor.setVoltage(0.0);
   }
-
-  // ---------------------------------------------------------------------------
-  // Getters (no Epilogue)
-  // ---------------------------------------------------------------------------
 
   public double getTargetRps() {
     return targetRps;
@@ -118,24 +104,22 @@ public class IntakeGround extends SubsystemBase {
     return voltageDemand;
   }
 
-  // ---------------------------------------------------------------------------
-  // Periodic
-  // ---------------------------------------------------------------------------
-
   @Override
   public void periodic() {
     if (voltageOverride) {
-      intakeMotor.setVoltage(voltageDemand);
+      if (Math.abs(voltageDemand) > kEpsilon) {
+        intakeMotor.setVoltage(voltageDemand);
+      }
+      return;
+    }
+
+    if (Math.abs(targetRps) <= kEpsilon) {
       return;
     }
 
     double limitedRps = rpsLimiter.calculate(targetRps);
     intakeMotor.setControl(velocityRequest.withVelocity(limitedRps));
   }
-
-  // ---------------------------------------------------------------------------
-  // Commands (no finallyDo)
-  // ---------------------------------------------------------------------------
 
   public Command intakeInCommand() {
     return Commands.startEnd(this::intakeIn, this::stop, this);
@@ -160,9 +144,4 @@ public class IntakeGround extends SubsystemBase {
   public Command stopCommand() {
     return runOnce(this::stop);
   }
-
-  // ---------------------------------------------------------------------------
-  // Util
-  // ---------------------------------------------------------------------------
-
 }

@@ -21,28 +21,16 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class FloorFeeder extends SubsystemBase {
 
-  // =========================================================================
-  // HARDWARE / INTERNALS
-  // =========================================================================
+  private static final double kEpsilon = 1e-4;
+
   private final TalonFX motor = new TalonFX(CANConstants.kFloorFeederID, kDefaultBus);
-
-  // Closed-loop velocity request
   private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
-
   private final SlewRateLimiter rpsLimiter = new SlewRateLimiter(kRampRPSPerSec);
 
-  // =========================================================================
-  // STATE
-  // =========================================================================
   private double targetRps = 0.0;
-
-  // Voltage override for testing controller
   private boolean voltageOverride = false;
   private double voltageDemand = 0.0;
 
-  // =========================================================================
-  // CONSTRUCTOR
-  // =========================================================================
   public FloorFeeder() {
     configureMotor();
     stop();
@@ -52,17 +40,13 @@ public class FloorFeeder extends SubsystemBase {
     TalonFXConfiguration config = new TalonFXConfiguration();
 
     config.Feedback.SensorToMechanismRatio = 1.0;
-
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive; // flip if needed
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     Slot0Configs slot0 = config.Slot0;
     slot0.kP = kP;
     slot0.kI = kI;
     slot0.kD = kD;
-
-    // Feedforward:
-    // For tuning, see Constants.java lines 117-119
     slot0.kS = kS;
     slot0.kV = kV;
     slot0.kA = kA;
@@ -74,10 +58,6 @@ public class FloorFeeder extends SubsystemBase {
     motor.getConfigurator().apply(config);
   }
 
-  // =========================================================================
-  // CONTROL API
-  // =========================================================================
-
   public void feederIn() {
     setRps(kFeedInRPS);
   }
@@ -86,21 +66,15 @@ public class FloorFeeder extends SubsystemBase {
     setRps(kFeedOutRPS);
   }
 
-  /** Velocity mode (RPS). Exits voltage override. */
   public void setRps(double rps) {
     voltageOverride = false;
     voltageDemand = 0.0;
-
     targetRps = MathUtil.clamp(rps, -kMaxRPS, kMaxRPS);
   }
 
-  /**
-   * Voltage mode (testing). Prevents periodic() from running velocity control.
-   */
   public void setVoltage(double volts) {
     voltageOverride = true;
     voltageDemand = MathUtil.clamp(volts, -12.0, 12.0);
-
     targetRps = 0.0;
     rpsLimiter.reset(0.0);
   }
@@ -108,16 +82,10 @@ public class FloorFeeder extends SubsystemBase {
   public void stop() {
     voltageOverride = false;
     voltageDemand = 0.0;
-
     targetRps = 0.0;
     rpsLimiter.reset(0.0);
-
     motor.setVoltage(0.0);
   }
-
-  // =========================================================================
-  // SIMPLE GETTERS
-  // =========================================================================
 
   public double getTargetRps() {
     return targetRps;
@@ -139,23 +107,22 @@ public class FloorFeeder extends SubsystemBase {
     return voltageDemand;
   }
 
-  // =========================================================================
-  // PERIODIC
-  // =========================================================================
   @Override
   public void periodic() {
     if (voltageOverride) {
-      motor.setVoltage(voltageDemand);
+      if (Math.abs(voltageDemand) > kEpsilon) {
+        motor.setVoltage(voltageDemand);
+      }
+      return;
+    }
+
+    if (Math.abs(targetRps) <= kEpsilon) {
       return;
     }
 
     double limitedRps = rpsLimiter.calculate(targetRps);
     motor.setControl(velocityRequest.withVelocity(limitedRps));
   }
-
-  // =========================================================================
-  // COMMANDS (no finallyDo)
-  // =========================================================================
 
   public Command feederInCommand() {
     return Commands.startEnd(this::feederIn, this::stop, this);
@@ -176,5 +143,4 @@ public class FloorFeeder extends SubsystemBase {
   public Command stopCommand() {
     return runOnce(this::stop);
   }
-
 }

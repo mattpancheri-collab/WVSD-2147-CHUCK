@@ -13,10 +13,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Generated.TunerConstants;
-import frc.robot.commands.ClimbFactory;
 import frc.robot.commands.IntakeFactory;
 import frc.robot.commands.LauncherFactory;
-import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.FloorFeeder;
 import frc.robot.subsystems.IntakeGround;
@@ -65,7 +63,6 @@ public class RobotContainer {
   public final FloorFeeder floorFeeder = new FloorFeeder();
   public final IntakePivot intakePivot = new IntakePivot();
   public final IntakeGround intakeGround = new IntakeGround();
-  public final Climber climber = new Climber();
 
   private final SendableChooser<Command> autoChooser;
 
@@ -121,7 +118,6 @@ public class RobotContainer {
 
     driverJoystick.a().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-    driverJoystick.start().whileTrue(ClimbFactory.climbCommand(climber));
 
     driverJoystick.b().onTrue(launcher.setHoodDegreesCommand(Constants.LauncherConstants.kHoodAngle1));
     driverJoystick.x().onTrue(launcher.setHoodDegreesCommand(Constants.LauncherConstants.kHoodAngle2));
