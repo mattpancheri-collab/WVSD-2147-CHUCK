@@ -1,7 +1,6 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
-
 import static frc.robot.Constants.BusConstants.kDefaultBus;
 import static frc.robot.Constants.LauncherConstants.*;
 import static frc.robot.Constants.ShootingConstants.kShooterPolarity;
@@ -26,7 +25,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Launcher extends SubsystemBase {
-
   // Shooter motors
   private final TalonFX shooterLeader = new TalonFX(CANConstants.kShooterLeaderID, kDefaultBus);
   private final TalonFX shooterFollower1 = new TalonFX(CANConstants.kShooterFollower1ID, kDefaultBus);
@@ -48,7 +46,6 @@ public class Launcher extends SubsystemBase {
 
   private final Follower follower1Request =
       new Follower(CANConstants.kShooterLeaderID, MotorAlignmentValue.Aligned);
-
   private final Follower follower2Request =
       new Follower(CANConstants.kShooterLeaderID, MotorAlignmentValue.Opposed);
 
@@ -67,16 +64,17 @@ public class Launcher extends SubsystemBase {
     configureShooterFollower(shooterFollower1);
     configureShooterFollower(shooterFollower2);
     configureHood();
+    applyFollowerMode();
+    stop();
+  }
 
+  private void applyFollowerMode() {
     shooterFollower1.setControl(follower1Request);
     shooterFollower2.setControl(follower2Request);
-
-    stop();
   }
 
   private void configureShooterLeader() {
     TalonFXConfiguration cfg = new TalonFXConfiguration();
-
     cfg.Feedback.SensorToMechanismRatio = 1.0;
     cfg.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     cfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
@@ -113,7 +111,6 @@ public class Launcher extends SubsystemBase {
 
   private void configureHood() {
     TalonFXConfiguration cfg = new TalonFXConfiguration();
-
     cfg.Feedback.SensorToMechanismRatio = kHoodGearRatio;
     cfg.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
@@ -148,11 +145,9 @@ public class Launcher extends SubsystemBase {
 
   public void setVoltage(double volts) {
     System.out.println("[Launcher] setVoltage: " + volts);
-
     shooterTargetRps = 0.0;
     shooterFeedForwardVolts = 0.0;
     shooterSetpointLimiter.reset(0.0);
-
     shooterVoltageDemand = MathUtil.clamp(kShooterPolarity * volts, -12.0, 12.0);
     m_controlMode = ControlMode.VOLTAGE;
   }
@@ -171,10 +166,10 @@ public class Launcher extends SubsystemBase {
     shooterTargetRps = 0.0;
     shooterFeedForwardVolts = 0.0;
     shooterSetpointLimiter.reset(0.0);
-
     shooterLeader.setVoltage(0.0);
-    shooterFollower1.setVoltage(0.0);
-    shooterFollower2.setVoltage(0.0);
+
+    // Keep followers in follower mode instead of forcing them out of it
+    applyFollowerMode();
 
     m_controlMode = ControlMode.STOPPED;
   }
@@ -237,11 +232,13 @@ public class Launcher extends SubsystemBase {
 
   @Override
   public void periodic() {
+    // Reassert follower mode continuously so nothing kicks them out
+    applyFollowerMode();
+
     switch (m_controlMode) {
       case VELOCITY:
         double limitedSignedRps =
             shooterSetpointLimiter.calculate(kShooterPolarity * shooterTargetRps);
-
         shooterLeader.setControl(
             shooterLeaderRequest
                 .withVelocity(limitedSignedRps)
@@ -268,14 +265,11 @@ public class Launcher extends SubsystemBase {
     SmartDashboard.putNumber("Launcher/ActualRPS", getShooterLeaderVelocityRps());
     SmartDashboard.putNumber("Launcher/ErrorRPS", getShooterErrorRps());
     SmartDashboard.putBoolean("Launcher/AtSpeed", shooterAtSpeed());
-
     SmartDashboard.putNumber("Launcher/AppliedVolts", getShooterAppliedVolts());
     SmartDashboard.putNumber("Launcher/FFVolts", getShooterFeedForwardVolts());
     SmartDashboard.putNumber("Launcher/SupplyCurrentAmps", getShooterSupplyCurrentAmps());
     SmartDashboard.putNumber("Launcher/StatorCurrentAmps", getShooterStatorCurrentAmps());
-
     SmartDashboard.putString("Launcher/ControlMode", getControlModeName());
-
     SmartDashboard.putNumber("Launcher/HoodTargetDeg", hoodTargetDeg);
     SmartDashboard.putNumber("Launcher/HoodActualDeg", getHoodPositionDeg());
     SmartDashboard.putBoolean("Launcher/HoodActive", m_hoodActive);
@@ -302,16 +296,10 @@ public class Launcher extends SubsystemBase {
   }
 
   public Command runShooterRpsCommand(double rps) {
-    return Commands.startEnd(
-        () -> setShooterRps(rps),
-        this::stop,
-        this);
+    return Commands.startEnd(() -> setShooterRps(rps), this::stop, this);
   }
 
   public Command runShooterVoltageCommand(double volts) {
-    return Commands.startEnd(
-        () -> setVoltage(volts),
-        this::stop,
-        this);
+    return Commands.startEnd(() -> setVoltage(volts), this::stop, this);
   }
 }

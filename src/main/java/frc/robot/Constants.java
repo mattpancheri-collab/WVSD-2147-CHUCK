@@ -112,6 +112,10 @@ public final class Constants {
     public static final double kIntakeAngleDeg = 45.0;
     public static final double kIdleAngleDeg = 0.0;
 
+    public static final double kIntakePivotLaunchUpDeg = 20; //used in Launch Factory to push fuel toward launcher
+    public static final double kIntakePivotLaunchDWNDeg = 35;
+
+
     /* --- PID TUNING: Controls the Arm Movement --- */
     public static final double kP = 120.0;
     public static final double kI = 0.0;
