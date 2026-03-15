@@ -26,13 +26,13 @@ public final class LauncherFactory {
     final double shooterRps = kShooterCloseRPS;
 
     final double floorFeederFullRps = FloorFeederConstants.kFeedInRPS;
-    final double floorFeederSlowRps = FloorFeederConstants.kFeedInRPS * 0.65;
+    final double floorFeederSlowRps = FloorFeederConstants.kFeedInRPS * 0.5;
 
     final double launchFeederFullRps = LaunchFeederConstants.kFeedInRPS;
     final double launchFeederSlowRps = LaunchFeederConstants.kFeedInRPS * 0.65;
 
     final double intakeFullVolts = kIntakeVolts;
-    final double intakeSlowVolts = kIntakeVolts * 0.65;
+    final double intakeSlowVolts = kIntakeVolts * 0.5;
 
     final boolean[] feedEnabled = new boolean[] { false };
     final boolean[] previousFeedEnabled = new boolean[] { false };

@@ -171,7 +171,7 @@ public final class Constants {
     public static final double kA = 0.0;
 
     public static final double kMaxRPS = 80.0;
-    public static final double kFeedInRPS = 45.0;
+    public static final double kFeedInRPS = 100.0;//was 80
     public static final double kFeedOutRPS = -25.0;
 
     public static final double kRampRPSPerSec = GlobalConstants.kDefaultRampRate;
@@ -207,7 +207,7 @@ public final class Constants {
     public static final double kA = 0.0;
 
     public static final double kMaxRPS = 90.0;
-    public static final double kFeedInRPS = 26.0;
+    public static final double kFeedInRPS = 80.0; //was 68
     public static final double kFeedOutRPS = -80.0;
 
     public static final double kRampRPSPerSec = GlobalConstants.kDefaultRampRate;
@@ -222,52 +222,50 @@ public final class Constants {
   public static final class LauncherConstants {
     private LauncherConstants() {
     }
-
-    public static final double kShooterMaxRPS = 90.0;
+  
+    public static final double kShooterMaxRPS = 76.0;
     public static final double kShooterIdleRPS = 10.0;
-    public static final double kShooterCloseRPS = 75.0;
+    public static final double kShooterCloseRPS = 72; //close is 72
     public static final double kShooterFarRPS = 75.0;
     public static final double kShooterRampRPSPerSec = 300.0;
-
-    public static final double kShooterP = 0.28;
+  
+    public static final double kShooterP = 0.40;
     public static final double kShooterI = 0.0;
     public static final double kShooterD = 0.0;
-
+  
     public static final double kShooterS = 0.20;
-    public static final double kShooterV = 0.12;
+    public static final double kShooterV = 0.130;
     public static final double kShooterA = 0.0;
-
+  
     public static final boolean kShooterEnableStatorLimit = true;
     public static final double kShooterStatorLimitAmps = 160.0;
-
-    public static final double kShooterShotBoostVolts = 0.75;
+  
+    public static final double kShooterShotBoostVolts = 1.15;
     public static final double kShooterReadyToleranceRps = 2.0;
-
-    public static final double kShooterFeedEnableErrorRps = 2.5;
-    public static final double kShooterFeedDisableErrorRps = 4.0;
-
-    public static final double kShooterPreHitBoostVolts = 1.0;
-    public static final double kShooterPreHitBoostTimeSec = 0.06;
-
+  
+    public static final double kShooterFeedEnableErrorRps = 4.0;
+    public static final double kShooterFeedDisableErrorRps = 6.0;
+  
+    public static final double kShooterPreHitBoostVolts = 1.35;
+    public static final double kShooterPreHitBoostTimeSec = 0.10;
+  
     public static final double kHoodGearRatio = 100.0;
-
-    /* --- HOOD ANGLE TUNING --- */
+  
     public static final double kHoodP = 2.0;
     public static final double kHoodI = 0.0;
     public static final double kHoodD = 0.5;
-
+  
     public static final double kHoodG = 0.1;
-
+  
     public static final double kHoodS = 0.0;
     public static final double kHoodV = 0.0;
     public static final double kHoodA = 0.0;
-
+  
     public static final boolean kHoodEnableStatorLimit = true;
     public static final double kHoodStatorLimitAmps = 15.0;
     public static final double kHoodMinDeg = 0.0;
     public static final double kHoodMaxDeg = 250.0;
-
-    // Custom Button Mappings (B, X, Y)
+  
     public static final double kHoodAngle1 = 221.1;
     public static final double kHoodAngle2 = 0.0;
     public static final double kHoodAngle3 = 72.4;
