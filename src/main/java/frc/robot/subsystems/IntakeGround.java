@@ -138,8 +138,8 @@ public class IntakeGround extends SubsystemBase {
   }
 
   public Command testVoltageCommand(double volts) {
-    return Commands.startEnd(() -> setVoltage(volts), () -> setVoltage(0.0), this);
-  }
+    return Commands.startEnd(() -> setVoltage(volts), this::stop, this);
+}
 
   public Command stopCommand() {
     return runOnce(this::stop);

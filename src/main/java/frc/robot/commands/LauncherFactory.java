@@ -101,10 +101,10 @@ public final class LauncherFactory {
     Command intakePivotOscillation =
         Commands.sequence(
                 Commands.runOnce(
-                    () -> intakePivot.setAngleDegrees(kIntakePivotLaunchUpDeg), intakePivot),
+                    () -> intakePivot.setAngleDegrees(kIntakePivotLaunchDWNDeg), intakePivot),
                 Commands.waitSeconds(1.0),
                 Commands.runOnce(
-                    () -> intakePivot.setAngleDegrees(kIntakePivotLaunchDWNDeg), intakePivot),
+                    () -> intakePivot.setAngleDegrees(kIntakePivotLaunchUpDeg), intakePivot),
                 Commands.waitSeconds(1.0))
             .repeatedly();
 
@@ -127,16 +127,14 @@ public final class LauncherFactory {
               SmartDashboard.putBoolean("LauncherFactory/AtSpeedNow", false);
               SmartDashboard.putNumber("LauncherFactory/LaunchFeederCmdRPS", 0.0);
             })
-        .finallyDo(
-            interrupted -> {
+            .finallyDo(interrupted -> {
               preHitTimer.stop();
               launcher.stop();
               floorFeeder.stop();
               launchFeeder.stop();
-              intakeGround.setVoltage(0.0);
+              intakeGround.stop();   // was setVoltage(0.0)
               intakePivot.stop();
-
               SmartDashboard.putBoolean("LauncherFactory/AtSpeedNow", false);
-            });
+          });
   }
 }

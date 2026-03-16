@@ -37,9 +37,11 @@ public final class IntakeFactory {
         intakePivot.setAngleCommand(IntakePivotConstants.kIntakeAngleDeg),
         Commands.startEnd(
             () -> intakeGround.setVoltage(IntakeFloorConstants.kIntakeVolts),
-            () -> intakeGround.setVoltage(0.0),
-            intakeGround));
-  }
+            intakeGround::stop,
+            intakeGround
+        )
+    );
+}
 
   // ---------------------------------------------------------------------------
   // Your existing percent/RPS version (kept)
