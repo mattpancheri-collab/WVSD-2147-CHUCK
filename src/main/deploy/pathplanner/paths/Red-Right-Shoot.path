@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 15.050509259259261,
-        "y": 6.324944444444444
+        "x": 14.733814814814815,
+        "y": 6.097574074074073
       },
       "isLocked": false,
       "linkedName": "Red-Right-Load"
     },
     {
       "anchor": {
-        "x": 14.944944444444445,
-        "y": 5.545388888888888
+        "x": 14.287194444444445,
+        "y": 5.261175925925926
       },
       "prevControl": {
-        "x": 15.139833333333334,
-        "y": 6.8040462962962955
+        "x": 14.879981481481485,
+        "y": 6.46299074074074
       },
       "nextControl": null,
       "isLocked": false,
@@ -59,7 +59,7 @@
     "rotation": -153.5576376707611
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Human-Player",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 1.080924186660615

@@ -5,13 +5,19 @@
     "data": {
       "commands": [
         {
+          "type": "path",
+          "data": {
+            "pathName": "Bot-Right-Start"
+          }
+        },
+        {
           "type": "deadline",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Red-Right-Load"
+                  "pathName": "Bot-Right-Intake"
                 }
               },
               {
@@ -32,19 +38,32 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Red-Right-Shoot"
+            "pathName": "Bot-Right-Shoot"
           }
         },
         {
-          "type": "named",
+          "type": "race",
           "data": {
-            "name": "LauncherFactory"
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 4.0
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "LauncherFactory"
+                }
+              }
+            ]
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Human-Player",
+  "folder": null,
   "choreoAuto": false
 }

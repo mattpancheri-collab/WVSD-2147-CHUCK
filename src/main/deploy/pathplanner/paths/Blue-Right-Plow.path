@@ -3,32 +3,41 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.5195833333333333,
-        "y": 0.632564814814814
+        "x": 6.2561481481481485,
+        "y": 2.183555555555555
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.5625740740740741,
-        "y": 0.6325648148148142
+        "x": 8.010148148148149,
+        "y": 2.0455092592592585
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Blue-Right-Plow"
     },
     {
       "anchor": {
-        "x": 1.0997129629629632,
-        "y": 0.632564814814814
+        "x": 6.1505833333333335,
+        "y": 5.561629629629628
       },
       "prevControl": {
-        "x": 2.480175925925926,
-        "y": 0.6406851851851838
+        "x": 9.098277777777781,
+        "y": 5.269296296296295
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Blue-Right-Load"
+      "linkedName": "Blue-Right-Bump-2"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": 89.84472726490807
+    },
+    {
+      "waypointRelativePos": 0.8132780082987577,
+      "rotationDegrees": 157.06695316597396
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -42,13 +51,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -32.34218024578119
   },
   "reversed": false,
   "folder": "Human-Player",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 39.351752626264805
   },
   "useDefaultConstraints": true
 }

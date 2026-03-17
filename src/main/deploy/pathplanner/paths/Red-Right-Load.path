@@ -45,7 +45,7 @@
     "rotation": 1.080924186660615
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Human-Player",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 0.0
