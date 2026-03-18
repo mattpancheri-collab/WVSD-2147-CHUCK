@@ -28,11 +28,11 @@ public final class LauncherFactory {
       IntakePivot intakePivot) {
     final double shooterRps = kShooterCloseRPS;
     final double floorFeederFullRps = FloorFeederConstants.kFeedInRPS;
-    final double floorFeederSlowRps = FloorFeederConstants.kFeedInRPS * 0.5;
+    final double floorFeederSlowRps = FloorFeederConstants.kFeedInRPS * 0.4;
     final double launchFeederFullRps = LaunchFeederConstants.kFeedInRPS;
-    final double launchFeederSlowRps = LaunchFeederConstants.kFeedInRPS * 0.65;
+    final double launchFeederSlowRps = LaunchFeederConstants.kFeedInRPS * 0.4;
     final double intakeFullVolts = kIntakeVolts;
-    final double intakeSlowVolts = kIntakeVolts * 0.5;
+    final double intakeSlowVolts = kIntakeVolts * 0.4;
 
     final boolean[] feedEnabled = new boolean[] {false};
     final boolean[] previousFeedEnabled = new boolean[] {false};
@@ -79,10 +79,8 @@ public final class LauncherFactory {
             },
             launcher);
 
-    Command feedCommand =
-        Commands.run(
-            () -> {
-              if (feedEnabled[0] != previousFeedEnabled[0]) {
+            Command feedCommand = Commands.run(
+              () -> {
                 if (feedEnabled[0]) {
                   floorFeeder.setRps(floorFeederFullRps);
                   launchFeeder.setRps(launchFeederFullRps);
@@ -92,11 +90,8 @@ public final class LauncherFactory {
                   launchFeeder.setRps(launchFeederSlowRps);
                   intakeGround.setVoltage(intakeSlowVolts);
                 }
-              }
-            },
-            floorFeeder,
-            launchFeeder,
-            intakeGround);
+              },
+              floorFeeder, launchFeeder, intakeGround);
 
     Command intakePivotOscillation =
         Commands.sequence(
@@ -132,7 +127,7 @@ public final class LauncherFactory {
               launcher.stop();
               floorFeeder.stop();
               launchFeeder.stop();
-              intakeGround.stop();   // was setVoltage(0.0)
+              intakeGround.stop();   
               intakePivot.stop();
               SmartDashboard.putBoolean("LauncherFactory/AtSpeedNow", false);
           });

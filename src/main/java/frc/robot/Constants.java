@@ -112,8 +112,8 @@ public final class Constants {
     public static final double kIntakeAngleDeg = 45.0;
     public static final double kIdleAngleDeg = 0.0;
 
-    public static final double kIntakePivotLaunchUpDeg = 20; //used in Launch Factory to push fuel toward launcher
-    public static final double kIntakePivotLaunchDWNDeg = 35;
+    public static final double kIntakePivotLaunchUpDeg = 30; //used in Launch Factory to push fuel toward launcher
+    public static final double kIntakePivotLaunchDWNDeg = 40;
 
 
     /* --- PID TUNING: Controls the Arm Movement --- */
@@ -229,7 +229,7 @@ public final class Constants {
   
     public static final double kShooterMaxRPS = 76.0;
     public static final double kShooterIdleRPS = 10.0;
-    public static final double kShooterCloseRPS = 72; //close is 72
+    public static final double kShooterCloseRPS = 74; //close is 72 sat
     public static final double kShooterFarRPS = 75.0;
     public static final double kShooterRampRPSPerSec = 300.0;
   
