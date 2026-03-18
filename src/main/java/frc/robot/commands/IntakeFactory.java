@@ -30,7 +30,6 @@ public final class IntakeFactory {
         },
         () -> {
           intakeGround.stop();
-          intakePivot.setAngleDegrees(IntakePivotConstants.kIdleAngleDeg);
         },
         intakePivot,
         intakeGround);
@@ -44,7 +43,6 @@ public final class IntakeFactory {
         },
         () -> {
           intakeGround.stop();
-          intakePivot.setAngleDegrees(IntakePivotConstants.kIdleAngleDeg);
         },
         intakeGround,
         intakePivot);

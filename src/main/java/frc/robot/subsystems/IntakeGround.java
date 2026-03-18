@@ -109,11 +109,14 @@ public class IntakeGround extends SubsystemBase {
     if (voltageOverride) {
       if (Math.abs(voltageDemand) > kEpsilon) {
         intakeMotor.setVoltage(voltageDemand);
+      } else {
+        intakeMotor.setVoltage(0.0);
       }
       return;
     }
 
     if (Math.abs(targetRps) <= kEpsilon) {
+      intakeMotor.setVoltage(0.0);
       return;
     }
 
@@ -139,7 +142,7 @@ public class IntakeGround extends SubsystemBase {
 
   public Command testVoltageCommand(double volts) {
     return Commands.startEnd(() -> setVoltage(volts), this::stop, this);
-}
+  }
 
   public Command stopCommand() {
     return runOnce(this::stop);
