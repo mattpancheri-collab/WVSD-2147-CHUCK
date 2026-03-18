@@ -1,16 +1,15 @@
 package frc.robot.commands;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
+import frc.robot.Constants.IntakeFloorConstants;
+import frc.robot.Constants.IntakePivotConstants;
 import frc.robot.subsystems.FloorFeeder;
 import frc.robot.subsystems.IntakeGround;
 import frc.robot.subsystems.IntakePivot;
 import frc.robot.subsystems.LaunchFeeder;
-
-import edu.wpi.first.math.MathUtil;
-import frc.robot.Constants.IntakePivotConstants;
-import frc.robot.Constants.IntakeFloorConstants;
 
 public final class IntakeFactory {
   private IntakeFactory() {
@@ -24,28 +23,33 @@ public final class IntakeFactory {
 
     final double intakeVolts = IntakeFloorConstants.kIntakeVolts;
 
-    Command intakeCmd = Commands.startEnd(
-        () -> intakeGround.setVoltage(+intakeVolts),
-        () -> intakeGround.setVoltage(0.0),
+    return Commands.startEnd(
+        () -> {
+          intakePivot.setAngleDegrees(IntakePivotConstants.kIntakeAngleDeg);
+          intakeGround.setVoltage(+intakeVolts);
+        },
+        () -> {
+          intakeGround.stop();
+          intakePivot.setAngleDegrees(IntakePivotConstants.kIdleAngleDeg);
+        },
+        intakePivot,
         intakeGround);
-
-    return intakeCmd;
   }
 
   public static Command intakeOnlyCommand(IntakeGround intakeGround, IntakePivot intakePivot) {
-    return Commands.parallel(
-        intakePivot.setAngleCommand(IntakePivotConstants.kIntakeAngleDeg),
-        Commands.startEnd(
-            () -> intakeGround.setVoltage(IntakeFloorConstants.kIntakeVolts),
-            intakeGround::stop,
-            intakeGround
-        )
-    );
-}
+    return Commands.startEnd(
+        () -> {
+          intakePivot.setAngleDegrees(IntakePivotConstants.kIntakeAngleDeg);
+          intakeGround.setVoltage(IntakeFloorConstants.kIntakeVolts);
+        },
+        () -> {
+          intakeGround.stop();
+          intakePivot.setAngleDegrees(IntakePivotConstants.kIdleAngleDeg);
+        },
+        intakeGround,
+        intakePivot);
+  }
 
-  // ---------------------------------------------------------------------------
-  // Your existing percent/RPS version (kept)
-  // ---------------------------------------------------------------------------
   public static Command deployAndIntakeChainPercent(
       IntakePivot intakePivot,
       IntakeGround intakeGround,
@@ -72,7 +76,7 @@ public final class IntakeFactory {
             launchFeeder.setRps(launchRps);
           }
         },
-        launchFeeder).finallyDo(i -> launchFeeder.stop()); // <-- if this errors, tell me and I'll swap it too
+        launchFeeder).finallyDo(i -> launchFeeder.stop());
 
     return Commands.parallel(
         intakePivot.setAngleCommand(deployDeg),
@@ -80,5 +84,4 @@ public final class IntakeFactory {
         floorFeeder.feederCommand(floorRps),
         launchFeederAutoStop).andThen(intakePivot.setAngleCommand(stowDeg));
   }
-
 }

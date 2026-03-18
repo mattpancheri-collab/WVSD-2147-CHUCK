@@ -90,7 +90,6 @@ public class RobotContainer {
             () -> intakePivot.setAngleDegrees(Constants.IntakePivotConstants.kIdleAngleDeg)));
   }
 
-  /** Simple helper for voltage-hold buttons */
   private static Command holdVolts(
       edu.wpi.first.wpilibj2.command.Subsystem req, Runnable start, Runnable end) {
     return Commands.startEnd(start, end, req);
@@ -107,7 +106,8 @@ public class RobotContainer {
 
     driverJoystick.rightBumper().whileTrue(launchFeeder.feederOutCommand());
 
-    driverJoystick.leftTrigger().whileTrue(IntakeFactory.intakeOnlyCommand(intakeGround, intakePivot));
+    driverJoystick.leftTrigger()
+        .whileTrue(IntakeFactory.intakeOnlyCommand(intakeGround, intakePivot));
 
     driverJoystick.rightTrigger(0.1)
         .whileTrue(
@@ -117,7 +117,6 @@ public class RobotContainer {
     driverJoystick.leftBumper().onTrue(intakePivot.pivotStowCommand());
 
     driverJoystick.a().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-
 
     driverJoystick.b().onTrue(launcher.setHoodDegreesCommand(Constants.LauncherConstants.kHoodAngle1));
     driverJoystick.x().onTrue(launcher.setHoodDegreesCommand(Constants.LauncherConstants.kHoodAngle2));
@@ -143,17 +142,8 @@ public class RobotContainer {
     drivetrain.registerTelemetry(logger::telemeterize);
 
     // OPERATOR
-    operatorJoystick.rightBumper().whileTrue(
-        launcher.runShooterRpsCommand(Constants.LauncherConstants.kShooterCloseRPS));
-    operatorJoystick.leftBumper().whileTrue(launchFeeder.feederInCommand());
-    operatorJoystick.x().whileTrue(intakeGround.intakeInCommand());
-    operatorJoystick.b().whileTrue(intakeGround.intakeOutCommand());
-    operatorJoystick.y().onTrue(
-        intakePivot.runOnce(
-            () -> intakePivot.setAngleDegrees(Constants.IntakePivotConstants.kIdleAngleDeg)));
-    operatorJoystick.a().onTrue(
-        intakePivot.runOnce(
-            () -> intakePivot.setAngleDegrees(Constants.IntakePivotConstants.kIntakeAngleDeg)));
+    operatorJoystick.leftTrigger()
+        .whileTrue(IntakeFactory.intakeOnlyCommand(intakeGround, intakePivot));
 
     // TESTING - IntakeGround
     testingJoystick.povLeft().whileTrue(
