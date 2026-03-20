@@ -42,7 +42,7 @@ public final class LauncherFactory {
           if (atSpeed) {
             launcher.setShooterRps(shooterRps, kShooterShotBoostVolts);
           } else {
-            launcher.setShooterRps(shooterRps, 0.0);
+            launcher.setShooterRps(shooterRps,0.5);
           }
 
           SmartDashboard.putBoolean("LauncherFactory/Active", true);
@@ -50,7 +50,7 @@ public final class LauncherFactory {
           SmartDashboard.putNumber("LauncherFactory/TargetShooterRPS", shooterRps);
           SmartDashboard.putNumber(
               "LauncherFactory/CommandedShotBoostVolts",
-              atSpeed ? kShooterShotBoostVolts : 0.0);
+              atSpeed ? kShooterShotBoostVolts : 0.5);
         },
         launcher);
 

@@ -29,7 +29,7 @@ public final class Constants {
     public static final boolean kShooterEnableStatorLimit = true;
     public static final double kShooterStatorLimitAmps = 160.0;
   
-    public static final double kShooterShotBoostVolts = 1.15;
+    public static final double kShooterShotBoostVolts = 1.20;
     public static final double kShooterReadyToleranceRps = 2.0;
   
     public static final double kShooterFeedEnableErrorRps = 4.0;
@@ -89,8 +89,8 @@ public final class Constants {
     public static final double kV = 0.12;
     public static final double kA = 0.0;
 
-    public static final double kMaxRPS = 90.0;
-    public static final double kFeedInRPS = 80.0; //feed @ target rps
+    public static final double kMaxRPS = 100.0;
+    public static final double kFeedInRPS = 90.0; //feed @ target rps
     public static final double kFeedOutRPS = -80.0;
 
     public static final double kRampRPSPerSec = GlobalConstants.kDefaultRampRate;
@@ -119,8 +119,8 @@ public final class Constants {
     public static final double kV = 0.12;
     public static final double kA = 0.0;
 
-    public static final double kMaxRPS = 80.0;
-    public static final double kFeedInRPS = 80.0;//feed @ target rps
+    public static final double kMaxRPS = 100.0;
+    public static final double kFeedInRPS = 90.0;//feed @ target rps
     public static final double kFeedOutRPS = -25.0;
 
     public static final double kRampRPSPerSec = GlobalConstants.kDefaultRampRate;
