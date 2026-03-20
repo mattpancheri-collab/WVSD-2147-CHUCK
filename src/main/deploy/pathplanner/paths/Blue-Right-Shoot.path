@@ -56,7 +56,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 42.87890360333855
+    "rotation": -45.954841253872196
   },
   "reversed": false,
   "folder": "Human-Player",
