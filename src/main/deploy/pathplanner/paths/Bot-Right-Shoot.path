@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 6.377953703703704,
-        "y": 2.3784444444444444
+        "x": 6.329231481481481,
+        "y": 2.4758888888888886
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.232981481481481,
-        "y": 2.768222222222222
+        "x": 5.1842592592592585,
+        "y": 2.8656666666666664
       },
       "isLocked": false,
       "linkedName": "Bot-Right-Intake-End"
     },
     {
       "anchor": {
-        "x": 2.5613796296296294,
-        "y": 2.183555555555555
+        "x": 2.642583333333333,
+        "y": 2.240398148148147
       },
       "prevControl": {
-        "x": 1.5613796296296294,
-        "y": 2.183555555555555
+        "x": 3.422138888888889,
+        "y": 2.50025
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -45.954841253872196
+    "rotation": 43.128255034711245
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -36.08250522232264
+    "rotation": 46.835774740545645
   },
   "useDefaultConstraints": true
 }

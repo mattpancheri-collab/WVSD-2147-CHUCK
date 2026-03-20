@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.5613796296296294,
-        "y": 2.183555555555555
+        "x": 2.642583333333333,
+        "y": 2.240398148148147
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.5613796296296294,
-        "y": 2.1835555555555555
+        "x": 3.642583333333333,
+        "y": 2.2403981481481474
       },
       "isLocked": false,
       "linkedName": "Blue-Right-Shoot"
@@ -48,7 +48,7 @@
   "folder": "Human-Player",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -45.954841253872196
+    "rotation": 43.128255034711245
   },
   "useDefaultConstraints": true
 }

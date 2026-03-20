@@ -14,7 +14,7 @@ public final class Constants {
   
     public static final double kShooterMaxRPS = 79.0;
     public static final double kShooterIdleRPS = 10.0;
-    public static final double kShooterCloseRPS = 73; //close is 72 saturday
+    public static final double kShooterCloseRPS = 75.0; //close is 72 saturday
     public static final double kShooterFarRPS = 75.0;
     public static final double kShooterRampRPSPerSec = 600.0; //was 300
   

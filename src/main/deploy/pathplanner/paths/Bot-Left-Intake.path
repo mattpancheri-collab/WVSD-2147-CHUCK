@@ -33,15 +33,15 @@
     {
       "anchor": {
         "x": 6.329231481481481,
-        "y": 2.4758888888888886
+        "y": 2.410925925925925
       },
       "prevControl": {
         "x": 6.857055555555555,
-        "y": 2.8088240740740744
+        "y": 2.743861111111111
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Bot-Right-Intake-End"
+      "linkedName": "Top-Left-end-intake"
     }
   ],
   "rotationTargets": [
@@ -71,7 +71,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 46.835774740545645
+    "rotation": -38.81138403675837
   },
   "reversed": false,
   "folder": null,

@@ -50,7 +50,7 @@ public final class LauncherFactory {
           SmartDashboard.putNumber("LauncherFactory/TargetShooterRPS", shooterRps);
           SmartDashboard.putNumber(
               "LauncherFactory/CommandedShotBoostVolts",
-              atSpeed ? kShooterShotBoostVolts : 0.5);
+              atSpeed ? kShooterShotBoostVolts : 1.5);
         },
         launcher);
 
