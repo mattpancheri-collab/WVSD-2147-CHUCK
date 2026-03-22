@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.1505833333333335,
-        "y": 5.561629629629628
+        "x": 7.141268518518519,
+        "y": 5.626592592592592
       },
       "isLocked": false,
       "linkedName": "Blue-Right-Bump-2"
@@ -20,8 +20,8 @@
         "y": 5.407342592592593
       },
       "prevControl": {
-        "x": 1.4639351851851852,
-        "y": 5.407342592592593
+        "x": 3.1947685185185186,
+        "y": 5.58599074074074
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -33.89378499467658
+    "rotation": -32.51362312449864
   },
   "reversed": false,
   "folder": "Human-Player",
