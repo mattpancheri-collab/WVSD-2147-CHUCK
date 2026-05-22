@@ -32,20 +32,20 @@ public final class Constants {
     public static final double kShooterShotBoostVolts = 1.20;
     public static final double kShooterReadyToleranceRps = 2.0;
   
-    public static final double kShooterFeedEnableErrorRps = 4.0;
-    public static final double kShooterFeedDisableErrorRps = 6.0;
+    public static final double kShooterFeedEnableErrorRps = 7.0; //was 4 at yakima
+    public static final double kShooterFeedDisableErrorRps = 9.0; //was 6 at yakima
   
     public static final double kShooterPreHitBoostVolts = 1.35;
     public static final double kShooterPreHitBoostTimeSec = 0.10;
   
     
     //HOOD
-    public static final double kHoodGearRatio = 100.0;
+    public static final double kHoodGearRatio = 18.85714;
   
-    public static final boolean kEnableHood = false;
-    public static final double kHoodP = 2.0;
+    public static final boolean kEnableHood = true;
+    public static final double kHoodP = 100.0;
     public static final double kHoodI = 0.0;
-    public static final double kHoodD = 0.5;
+    public static final double kHoodD = 0.0;
   
     public static final double kHoodG = 0.1;
   
@@ -58,9 +58,9 @@ public final class Constants {
     public static final double kHoodMinDeg = 0.0;
     public static final double kHoodMaxDeg = 250.0;
   
-    public static final double kHoodAngle1 = 221.1;
-    public static final double kHoodAngle2 = 0.0;
-    public static final double kHoodAngle3 = 72.4;
+    public static final double kHoodAngle1 = 70;
+    public static final double kHoodAngle2 = 85;
+    public static final double kHoodAngle3 = 100;
   }
 
   // ===========================================================================

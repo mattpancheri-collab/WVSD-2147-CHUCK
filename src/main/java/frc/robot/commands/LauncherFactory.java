@@ -3,6 +3,7 @@ package frc.robot.commands;
 import static frc.robot.Constants.IntakeFloorConstants.kIntakeVolts;
 import static frc.robot.Constants.IntakePivotConstants.*;
 import static frc.robot.Constants.LauncherConstants.kShooterCloseRPS;
+import static frc.robot.Constants.LauncherConstants.kShooterPreHitBoostVolts;
 import static frc.robot.Constants.LauncherConstants.kShooterShotBoostVolts;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -32,53 +33,56 @@ public final class LauncherFactory {
     final double launchFeederFullRps = LaunchFeederConstants.kFeedInRPS;
     final double intakeFullVolts = kIntakeVolts;
 
-    final double floorFeederRecoverRps = floorFeederFullRps * 0.20;
-    final double intakeRecoverVolts = intakeFullVolts * 0.20;
+    final double floorFeederRecoverRps = floorFeederFullRps * 0.15;
+    final double launchFeederRecoverRps = launchFeederFullRps * 0.25;
+    final double intakeRecoverVolts = intakeFullVolts * 0.15;
 
-    Command shooterCommand = Commands.run(
-        () -> {
-          boolean atSpeed = launcher.shooterAtSpeed();
+    Command shooterCommand =
+        Commands.run(
+            () -> {
+              boolean atSpeed = launcher.shooterReadyForFeed();
+              if (atSpeed) {
+                launcher.setShooterRps(shooterRps, kShooterShotBoostVolts);
+              } else {
+                launcher.setShooterRps(shooterRps, kShooterPreHitBoostVolts);
+              }
 
-          if (atSpeed) {
-            launcher.setShooterRps(shooterRps, kShooterShotBoostVolts);
-          } else {
-            launcher.setShooterRps(shooterRps,0.5);
-          }
+              SmartDashboard.putBoolean("LauncherFactory/Active", true);
+              SmartDashboard.putBoolean("LauncherFactory/AtSpeedGate", atSpeed);
+              SmartDashboard.putNumber("LauncherFactory/TargetShooterRPS", shooterRps);
+              SmartDashboard.putNumber(
+                  "LauncherFactory/CommandedShotBoostVolts",
+                  atSpeed ? kShooterShotBoostVolts : kShooterPreHitBoostVolts);
+              SmartDashboard.putNumber("Launcher/ErrorRPS", launcher.getShooterErrorRps());
+            },
+            launcher);
 
-          SmartDashboard.putBoolean("LauncherFactory/Active", true);
-          SmartDashboard.putBoolean("LauncherFactory/AtSpeedGate", atSpeed);
-          SmartDashboard.putNumber("LauncherFactory/TargetShooterRPS", shooterRps);
-          SmartDashboard.putNumber(
-              "LauncherFactory/CommandedShotBoostVolts",
-              atSpeed ? kShooterShotBoostVolts : 1.5);
-        },
-        launcher);
+    Command feedCommand =
+        Commands.run(
+            () -> {
+              boolean atSpeed = launcher.shooterReadyForFeed();
+              if (atSpeed) {
+                floorFeeder.setRps(floorFeederFullRps);
+                launchFeeder.setRps(launchFeederFullRps);
+                intakeGround.setVoltage(intakeFullVolts);
 
-    Command feedCommand = Commands.run(
-        () -> {
-          boolean atSpeed = launcher.shooterAtSpeed();
+                SmartDashboard.putString("LauncherFactory/FeedState", "FULL");
+                SmartDashboard.putNumber("LauncherFactory/FloorFeederCmdRPS", floorFeederFullRps);
+                SmartDashboard.putNumber("LauncherFactory/LaunchFeederCmdRPS", launchFeederFullRps);
+                SmartDashboard.putNumber("LauncherFactory/IntakeCmdVolts", intakeFullVolts);
+              } else {
+                floorFeeder.setRps(floorFeederRecoverRps);
+                launchFeeder.setRps(launchFeederRecoverRps);
+                intakeGround.setVoltage(intakeRecoverVolts);
 
-          if (atSpeed) {
-            floorFeeder.setRps(floorFeederFullRps);
-            launchFeeder.setRps(launchFeederFullRps);
-            intakeGround.setVoltage(intakeFullVolts);
-
-            SmartDashboard.putString("LauncherFactory/FeedState", "FULL");
-            SmartDashboard.putNumber("LauncherFactory/FloorFeederCmdRPS", floorFeederFullRps);
-            SmartDashboard.putNumber("LauncherFactory/LaunchFeederCmdRPS", launchFeederFullRps);
-            SmartDashboard.putNumber("LauncherFactory/IntakeCmdVolts", intakeFullVolts);
-          } else {
-            floorFeeder.setRps(floorFeederRecoverRps);
-            launchFeeder.stop();
-            intakeGround.setVoltage(intakeRecoverVolts);
-
-            SmartDashboard.putString("LauncherFactory/FeedState", "RECOVER");
-            SmartDashboard.putNumber("LauncherFactory/FloorFeederCmdRPS", floorFeederRecoverRps);
-            SmartDashboard.putNumber("LauncherFactory/LaunchFeederCmdRPS", 0.0);
-            SmartDashboard.putNumber("LauncherFactory/IntakeCmdVolts", intakeRecoverVolts);
-          }
-        },
-        floorFeeder, launchFeeder, intakeGround);
+                SmartDashboard.putString("LauncherFactory/FeedState", "RECOVER");
+                SmartDashboard.putNumber("LauncherFactory/FloorFeederCmdRPS", floorFeederRecoverRps);
+                SmartDashboard.putNumber(
+                    "LauncherFactory/LaunchFeederCmdRPS", launchFeederRecoverRps);
+                SmartDashboard.putNumber("LauncherFactory/IntakeCmdVolts", intakeRecoverVolts);
+              }
+            },
+            floorFeeder, launchFeeder, intakeGround);
 
     Command intakePivotOscillation =
         Commands.sequence(
@@ -92,32 +96,37 @@ public final class LauncherFactory {
 
     return shooterCommand
         .alongWith(feedCommand, intakePivotOscillation)
-        .beforeStarting(() -> {
-          SmartDashboard.putBoolean("LauncherFactory/Active", true);
-          SmartDashboard.putBoolean("LauncherFactory/AtSpeedGate", false);
-          SmartDashboard.putString("LauncherFactory/FeedState", "STARTING");
-          SmartDashboard.putNumber("LauncherFactory/FloorFeederCmdRPS", 0.0);
-          SmartDashboard.putNumber("LauncherFactory/LaunchFeederCmdRPS", 0.0);
-          SmartDashboard.putNumber("LauncherFactory/IntakeCmdVolts", 0.0);
-          SmartDashboard.putNumber("LauncherFactory/CommandedShotBoostVolts", 0.0);
+        .beforeStarting(
+            () -> {
+              SmartDashboard.putBoolean("LauncherFactory/Active", true);
+              SmartDashboard.putBoolean("LauncherFactory/AtSpeedGate", false);
+              SmartDashboard.putString("LauncherFactory/FeedState", "STARTING");
+              SmartDashboard.putNumber("LauncherFactory/FloorFeederCmdRPS", 0.0);
+              SmartDashboard.putNumber("LauncherFactory/LaunchFeederCmdRPS", 0.0);
+              SmartDashboard.putNumber("LauncherFactory/IntakeCmdVolts", 0.0);
+              SmartDashboard.putNumber("LauncherFactory/CommandedShotBoostVolts", 0.0);
+              SmartDashboard.putNumber("Launcher/ErrorRPS", 0.0);
 
-          System.out.println("[LauncherFactory] shootFeedVelocity STARTING");
-        })
-        .finallyDo(interrupted -> {
-          launcher.stop();
-          floorFeeder.stop();
-          launchFeeder.stop();
-          intakeGround.setVoltage(0.0);
+              System.out.println("[LauncherFactory] shootFeedVelocity STARTING");
+            })
+        .finallyDo(
+            interrupted -> {
+              launcher.stop();
+              floorFeeder.stop();
+              launchFeeder.stop();
+              intakeGround.setVoltage(0.0);
 
-          SmartDashboard.putBoolean("LauncherFactory/Active", false);
-          SmartDashboard.putBoolean("LauncherFactory/AtSpeedGate", false);
-          SmartDashboard.putString("LauncherFactory/FeedState", "OFF");
-          SmartDashboard.putNumber("LauncherFactory/FloorFeederCmdRPS", 0.0);
-          SmartDashboard.putNumber("LauncherFactory/LaunchFeederCmdRPS", 0.0);
-          SmartDashboard.putNumber("LauncherFactory/IntakeCmdVolts", 0.0);
-          SmartDashboard.putNumber("LauncherFactory/CommandedShotBoostVolts", 0.0);
+              SmartDashboard.putBoolean("LauncherFactory/Active", false);
+              SmartDashboard.putBoolean("LauncherFactory/AtSpeedGate", false);
+              SmartDashboard.putString("LauncherFactory/FeedState", "OFF");
+              SmartDashboard.putNumber("LauncherFactory/FloorFeederCmdRPS", 0.0);
+              SmartDashboard.putNumber("LauncherFactory/LaunchFeederCmdRPS", 0.0);
+              SmartDashboard.putNumber("LauncherFactory/IntakeCmdVolts", 0.0);
+              SmartDashboard.putNumber("LauncherFactory/CommandedShotBoostVolts", 0.0);
+              SmartDashboard.putNumber("Launcher/ErrorRPS", 0.0);
 
-          System.out.println("[LauncherFactory] shootFeedVelocity ENDED interrupted=" + interrupted);
-        });
+              System.out.println(
+                  "[LauncherFactory] shootFeedVelocity ENDED interrupted=" + interrupted);
+            });
   }
 }
